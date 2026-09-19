@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# ビルド成果物 (GitHub Releases に添付する)
+dist/
+
+# 元画像・元音源 (大きい。減色/変換後の assets/ だけをリポジトリに含める)
+art/
+
+# ローカルのみ
+.DS_Store
+*.log
+
+# ストーリー資料・後編の草稿 (ネタバレのため非公開)
+private/
