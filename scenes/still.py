@@ -14,7 +14,7 @@ class StillScene(Scene):
     def __init__(self, game, image, next_scene, hold=HOLD):
         super().__init__(game)
         self.image = image            # assets/img/<image>.png (320x240)
-        self.next_scene = next_scene  # 次の場面を作る関数
+        self.next_scene = next_scene  # 次の場面を作る関数。None なら pop して戻る
         self.hold = hold
         self.t = 0
 
@@ -23,7 +23,10 @@ class StillScene(Scene):
         if self.game.fade_t:
             return
         if self.t > self.hold or (self.t > SKIP_AFTER and self.inp.confirm):
-            self.game.replace_fade(self.next_scene())
+            if self.next_scene is None:
+                self.game.pop_fade()
+            else:
+                self.game.replace_fade(self.next_scene())
 
     def draw(self):
         pyxel.camera()

@@ -11,17 +11,7 @@ from core.i18n import tt
 from game import Scene
 from ui import font
 
-# スタッフロールの文言は assets/story.md の `## credits` で編集する。無いときの予備
-FALLBACK_CREDITS = [
-    ("BIT-RATE-RUSH", "BIT-RATE-RUSH"),
-    ("", ""),
-    ("Thank you for playing", "Thank you for playing"),
-]
-
-
-def credits():
-    from data.story import CREDITS
-    return CREDITS or FALLBACK_CREDITS
+from scenes import credits
 
 
 class EndingScene(Scene):
@@ -47,7 +37,7 @@ class EndingScene(Scene):
     def update(self):
         self.t += 1
         if self.phase == "credits":
-            if (self.t > 60 * 14 + len(credits()) * 14 or (self.t > 120 and self.inp.confirm)) and not self.game.fade_t:
+            if (self.t > credits.duration() or (self.t > 120 and self.inp.confirm)) and not self.game.fade_t:
                 def to_rush():
                     self.phase = "rush"
                     self.t = 0
@@ -95,11 +85,7 @@ class EndingScene(Scene):
             images.draw("town_bg", 43, 10)
             pyxel.dither(1.0)
         elif self.phase == "credits":
-            y0 = H - self.t * 0.5
-            for i, (ja, en) in enumerate(credits()):
-                y = y0 + i * 14
-                if -12 < y < H:
-                    font.center(y, tt((ja, en)), P.GOLD if i == 0 else 7)
+            credits.draw(self.t)
         elif self.phase == "rush":
             a = min(1.0, self.t / 60.0)
             pyxel.dither(a)

@@ -42,7 +42,7 @@ def context(key):
 class DialogViewerScene(Scene):
     def __init__(self, game):
         super().__init__(game)
-        self.keys = list(DIALOGS.keys()) + [f"@chapter{n}" for n in range(1, 6)]
+        self.keys = list(DIALOGS.keys()) + [f"@chapter{n}" for n in range(1, 6)] + ["@credits", "@still:p2_op09"]
         self.cursor = 0
         self.top = 0
         self.state = GameState()
@@ -81,6 +81,16 @@ class DialogViewerScene(Scene):
                 from scenes.chapter_title import ChapterTitleScene
                 self.game.push_fade(ChapterTitleScene(self.game, int(key[-1])))
                 return
+            if key == "@credits":
+                from scenes.credits import CreditsScene
+                self.game.push_fade(CreditsScene(self.game))
+                return
+            if key.startswith("@still:"):
+                # 一枚絵 (p2_intro 後の p2_op09 など)。表示後はこのビューアへ戻る
+                from scenes.still import StillScene
+                name = key.split(":", 1)[1]
+                self.game.push_fade(StillScene(self.game, name, None))
+                return
             audio.bgm(context(key)[1])
             self.game.push(DialogScene(self.game, key))
 
@@ -112,7 +122,7 @@ class DialogViewerScene(Scene):
             if sel:
                 UI.sel_bar(bx + 4, y - 1, bw - 8, ROW)
             opt = OPTIONS.get(key, {})
-            tag = "VN" if opt.get("vn") else ("章" if key.startswith("@") else "  ")
+            tag = "VN" if opt.get("vn") else ("絵" if key.startswith("@still") else ("演出" if key.startswith("@") else "  "))
             spk = DIALOGS[key][0][0] if key in DIALOGS and DIALOGS[key] else ""
             font.text(bx + 8, y, f"{tag} {key}", UI.TEXT if sel else UI.SUB)
             font.right(y, spk, UI.SUB, bx + bw - 8)
