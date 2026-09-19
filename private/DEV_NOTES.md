@@ -1,3 +1,5 @@
+> 開発メモ (非公開)。公開用の README は リポジトリ直下の README.md / README.en.md。
+
 # Bit-Rate-Rush (BRR)
 
 Pyxel 製ヴァンサバ系ゲーム。設計は [DESIGN.md](DESIGN.md)。
