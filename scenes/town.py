@@ -12,8 +12,8 @@ from ui import window as UI
 MENU = [
     ("town.castle", "castle"),
     ("town.tavern", "tavern"),
-    ("town.smith", "smith"),
-    ("town.shop", "shop"),
+    ("town.smith_s", "smith"),
+    ("town.shop_s", "shop"),
     ("town.inn", "inn"),
     ("town.depart", "depart"),
 ]
@@ -126,7 +126,9 @@ class TownScene(Scene):
         # ステータス (メニュー窓の下部)
         sy = my + mh - 40
         pyxel.line(mx + 4, sy - 3, mx + mw - 5, sy - 3, UI.SUB)
-        font.text(mx + 5, sy, f"{t('town.chapter')}{st.chapter} {st.day}{t('town.day')}", UI.SUB)
+        from core import i18n
+        day = f"{st.day}{t('town.day')}" if i18n.lang == "ja" else f"{t('town.day')} {st.day}"
+        font.text(mx + 5, sy, f"{t('town.chapter')}{st.chapter} {day}", UI.SUB)
         font.text(mx + 5, sy + 12, f"HP{int(st.hp)}/{st.maxhp}", P_HP if st.hp < st.maxhp * 0.5 else UI.TEXT)
         font.text(mx + 5, sy + 24, f"{st.gold}G", UI.GOLD)
 

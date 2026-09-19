@@ -36,6 +36,8 @@ STR = {
     "town.tavern": ("酒場", "Tavern"),
     "town.smith": ("武器屋", "Weaponsmith"),
     "town.shop": ("雑貨屋", "General Store"),
+    "town.smith_s": ("武器屋", "Smithy"),       # 街の左メニュー用 (幅 68px に収める)
+    "town.shop_s": ("雑貨屋", "Store"),
     "town.inn": ("宿屋", "Inn"),
     "town.depart": ("出発", "Depart"),
     "town.gold": ("所持金", "Gold"),
