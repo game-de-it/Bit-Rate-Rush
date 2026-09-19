@@ -75,34 +75,6 @@ def pickup():
         pyxel.play(3, SE_PICKUP)
 
 
-def _load(name):
-    """曲をデコードしてサウンド番号を返す (キャッシュ済みならそのまま)。無い / 失敗なら None。実機で 1 曲 ~1 秒かかる"""
-    slot = _bgm_slot.get(name)
-    if slot is not None:
-        return slot
-    path = os.path.join(BGM_DIR, f"{name}.mp3")
-    if not os.path.exists(path):
-        return None
-    slot = BGM_BASE + len(_bgm_slot)
-    try:
-        pyxel.sounds[slot].pcm(path)
-    except Exception:
-        return None
-    _bgm_slot[name] = slot
-    return slot
-
-
-def loaded(name):
-    return name in _bgm_slot
-
-
-def preload(name):
-    """先読み (暗転中など、止まっても見えないときに呼ぶ)。デコードしたら True"""
-    if name in _bgm_slot:
-        return False
-    return _load(name) is not None
-
-
 def bgm(name, battle=False, loop=True):
     """assets/bgm/<name>.mp3 を ch0 で再生 (既定はループ)。同じ曲なら何もしない。初回のみデコード (実機で ~1 秒)。
     battle=True なら戦闘 BGM の音量を使う。loop=False は戦闘のプレイリスト再生用 (曲が終わったら呼び出し側が次を選ぶ)。"""
@@ -115,40 +87,24 @@ def bgm(name, battle=False, loop=True):
     if name is None:
         bgm_stop()
         return
-    slot = _load(name)
+    slot = _bgm_slot.get(name)
     if slot is None:
-        bgm_stop()
-        return
+        path = os.path.join(BGM_DIR, f"{name}.mp3")
+        if not os.path.exists(path):
+            bgm_stop()
+            return
+        slot = BGM_BASE + len(_bgm_slot)
+        try:
+            pyxel.sounds[slot].pcm(path)
+        except Exception:
+            bgm_stop()
+            return
+        _bgm_slot[name] = slot
     pyxel.stop(0)
     _bgm_is_battle = battle
     _apply_bgm_gain()
     pyxel.play(0, slot, loop=loop)
     _bgm_now = name
-
-
-def bgm_now():
-    return _bgm_now
-
-
-def replay():
-    """今の曲を頭からもう一度 (ループなし)"""
-    slot = _bgm_slot.get(_bgm_now)
-    if slot is None:
-        return
-    pyxel.stop(0)
-    pyxel.play(0, slot, loop=False)
-
-
-def preload_battle(n=1):
-    """暗転中に呼ぶ: この先かかる戦闘曲のうち未デコードのものを n 曲まで読み込む (1 曲 ~1 秒)"""
-    from core import settings
-    done = 0
-    for name in settings.upcoming_battle_tracks(4):
-        if done >= n:
-            break
-        if preload(name):
-            done += 1
-    return done
 
 
 def jingle(name):
