@@ -26,14 +26,25 @@ def _debug_enabled():
     try:
         import pyxel
         return _os.path.exists(_os.path.join(pyxel.user_data_dir("kroot", "Bit-Rate-Rush"), "debug"))
-    except Exception:
+    except BaseException:
+        # pyxel.init 前の user_data_dir は環境によって panic する (実機で確認)。init 後に refresh_debug() で再評価する
         return False
 
 
-DEBUG = _debug_enabled()
-DEBUG_FIXED_XP = 5 if DEBUG else None      # 簡単レベルアップ (ジェム 5 個) の初期値
-DEBUG_LEVELUP_SKIP = DEBUG                 # レベルアップ画面を X でスキップ
-DEBUG_WEAPON_SELECT = DEBUG                # サバイバル開始前の初期武器選択
-DEBUG_PAUSE_TOOLS = DEBUG                  # ポーズメニューの DBG 項目
-DEBUG_DIALOG_VIEWER = DEBUG                # タイトルの会話ビューア
-DEBUG_CHAPTER_START = DEBUG                # タイトルの章スタート
+def _apply_debug(on):
+    global DEBUG, DEBUG_FIXED_XP, DEBUG_LEVELUP_SKIP, DEBUG_WEAPON_SELECT, DEBUG_PAUSE_TOOLS, DEBUG_DIALOG_VIEWER, DEBUG_CHAPTER_START
+    DEBUG = on
+    DEBUG_FIXED_XP = 5 if on else None      # 簡単レベルアップ (ジェム 5 個) の初期値
+    DEBUG_LEVELUP_SKIP = on                 # レベルアップ画面を X でスキップ
+    DEBUG_WEAPON_SELECT = on                # サバイバル開始前の初期武器選択
+    DEBUG_PAUSE_TOOLS = on                  # ポーズメニューの DBG 項目
+    DEBUG_DIALOG_VIEWER = on                # タイトルの会話ビューア
+    DEBUG_CHAPTER_START = on                # タイトルの章スタート
+
+
+def refresh_debug():
+    """pyxel.init() の直後、他のモジュールを import する前に呼ぶ。"""
+    _apply_debug(_debug_enabled())
+
+
+_apply_debug(_debug_enabled())
