@@ -66,14 +66,23 @@ class EndingScene(Scene):
                 save.save(st)
                 # 後編の導入 (p2_intro) を見せて「後編へ続く」→ タイトル
                 from scenes.dialog import DialogScene
+                from scenes.still import StillScene
                 from scenes.tbc import ToBeContinuedScene
                 from data.story import DIALOGS
                 self.phase = "teaser"
+                tbc = lambda: ToBeContinuedScene(self.game, st)
                 if "p2_intro" in DIALOGS:
-                    self.game.push_fade(DialogScene(self.game, "p2_intro", fade_out=True,
-                                                    on_done=lambda: self.game.replace(ToBeContinuedScene(self.game, st))))
+                    # p2_intro (暗転で閉じる) → 一枚絵 p2_op09 ("To be continued" 入り。ending.png と同じ見せ方) → タイトル
+                    # p2_op09 が無ければ文字だけの「後編へ続く」画面 (tbc) を使う
+                    def after_intro():
+                        if images.get("p2_op09") is not None:
+                            from scenes.title import TitleScene
+                            self.game.replace(StillScene(self.game, "p2_op09", lambda: TitleScene(self.game)))
+                        else:
+                            self.game.replace(tbc())
+                    self.game.push_fade(DialogScene(self.game, "p2_intro", fade_out=True, on_done=after_intro))
                 else:
-                    self.game.replace_fade(ToBeContinuedScene(self.game, st))
+                    self.game.replace_fade(tbc())
         elif self.phase == "teaser":
             pass
 
