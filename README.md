@@ -1,109 +1,131 @@
-# Bit-Rate-Rush (BRR)
+# Bit-Rate-Rush
 
-Pyxel 製ヴァンサバ系ゲーム。設計は [DESIGN.md](DESIGN.md)。
+![Bit-Rate-Rush](docs/shots/title.png)
 
-## 起動
+日本語 ・ [English](README.en.md)
 
-```bash
-python3 main.py
-```
+> **ナイフ一本、押し寄せる群れ。生き延びた分だけ、街は君を知っていく。**
 
-要 `pyxel >= 2.9` (`pip install pyxel`)。画像・音はすべてコード生成なので pyxres 不要。
+「動くだけで戦う」サバイバルアクションに、街と依頼と物語を重ねた 2D ドット絵 RPG です。
+[Pyxel](https://github.com/kitao/pyxel) 製。320×240、64 色、日本語 / 英語。
 
-- パレット: `assets/brr.pyxpal` (標準 16 色 + ゲーム用 16 色 + 画像用 32 色 = **64 色**、`core/palette.py` に名前定義)。スプライト・UI は 0〜31 だけで描き、32〜63 は立ち絵・背景の減色用 (紫・肌・木・石・緑・空・金属など)。背景は暗い低彩度 (16〜18)、敵は高彩度 + 縁取り (19)
-- フォント: `assets/umplus_j10r.bdf` (M+ 10px、日本語グリフ入り) を `ui/font.py` 経由で使う
-- 多言語: 表示文字列は `core/i18n.py` の `t(key)`、データ側は `(ja, en)` タプルを `tt()` で引く。設定は `core/settings.py` が `user_data_dir/settings.json` に保存
+---
+
+## 画面
+
+| | |
+|---|---|
+| ![街](docs/shots/town.png) | ![酒場](docs/shots/tavern.png) |
+| **城下町** — 酒場・武器屋・雑貨屋・宿屋・王宮 | **酒場** — マスターから依頼を受ける |
+| ![戦闘](docs/shots/battle.png) | ![レベルアップ](docs/shots/levelup.png) |
+| **戦闘** — 動くだけ。武器は勝手に飛ぶ | **レベルアップ** — 3 択で武器と能力を伸ばす |
+| ![章タイトル](docs/shots/chapter.png) | ![物語](docs/shots/vn.png) |
+| **章の始まり** | **物語の場面** |
+
+---
+
+## どんなゲーム?
+
+戦場でやることはひとつ、**逃げ回ること**。武器は勝手に飛び、魔法は勝手に燃える。
+君が決めるのは「どこへ走るか」と「次に何を伸ばすか」だけ。
+
+数分の戦闘を生き延びて街へ帰れば、拾った硬貨で武器を買い、宿で傷を癒やし、酒場で次の依頼を選ぶ。
+そうやって一歩ずつ強くなった先に、この世界で起きている "本当のこと" が待っています。
+
+### 世界 ― レートが上がると、ラッシュが来る
+
+この世界の生き物は **ビット** と呼ばれる光の粒を宿しています。魔物を倒せばビットは散り、風に消える。
+人は、それを拾うことができない。
+
+そして世界には **レート** ― 流れの速さ ― があり、何者かがそれを上げるとき、眠っていた魔物は際限なく目を覚まし、群れとなって街へ押し寄せる。人々はそれを **ラッシュ** と呼び、口にすることさえ避けてきました。
+
+今、城下町ルーメンの空を、コウモリの群れが覆いはじめています。
+――若者が門をくぐった、その日から。
+
+---
+
+## 遊び方
+
+### 街で
+| 施設 | できること |
+|---|---|
+| **酒場** | 依頼板から仕事を選ぶ (生き延びる / 討伐する)。マスターの噂話も聞ける |
+| **武器屋** | 硬貨で武器を買い、ランクを上げて攻撃力を伸ばす |
+| **雑貨屋** | 薬草・爆弾・護符などの消耗品。持ち込めるのは 3 つまで |
+| **宿屋** | 休んで回復する (有料)。日記をつける = セーブ |
+| **王宮** | 王からの特別な依頼。報酬は王家に伝わる **魔導具** (魔法)。その章の酒場依頼をすべて片付けると受けられる |
+| **出発** | 受けた依頼へ。初期武器と持ち物を確認して戦場へ |
+
+### 戦場で
+- **移動だけ。** 攻撃は全自動
+- 敵を倒してビットを拾い、レベルアップのたびに **3 択** で武器・魔法・能力を伸ばす
+- 持ち込んだアイテムは L / R で選び、Y で使う
+- 依頼を達成したら **START → 帰還** で帰ってもいいし、制限時間まで戦って稼いでもいい。ただし倒れれば持ち帰りは半分
+- 帰還したときの傷は、そのまま街へ持ち帰る。癒やすには硬貨がいる
+- 生存依頼は残り 1 分で **ラッシュ** (出現 2 倍)。討伐依頼は目標の倍を倒すごとにボーナスの 1 分が延びる
+
+### 物語
+全 5 章。1 章は武器 1 つ、章が進むほど同時に持てる武器が増え、王宮で魔法が解放されていきます。
+プレイ時間の目安は 60〜90 分。エンディングのあと、後編の導入が流れます。
+
+---
 
 ## 操作
 
-| 操作 | キーボード | ゲームパッド |
+| 操作 | ゲームパッド | キーボード |
 |---|---|---|
-| 移動 | WASD / 矢印 | D-pad / 左スティック |
-| 決定 | Z / Enter / Space | A |
-| ポーズ | Esc | START |
-| ポーズメニュー | 上下 + Z で選択 (再開 / タイトル / 終了) | D-pad + A |
-| アイテム (依頼中) | Q / E で選択、C で使用 | L / R で選択、Y で使用 |
-| タイトルメニュー | 上下 + Z (はじめる / オプション / 終了) | D-pad + A |
-| オプション | 左右で言語切替 (日本語 / English)、X でもどる | 左右 + B |
+| 移動 | 十字キー / 左スティック | WASD / 矢印 |
+| 決定 | A | Z / Enter / Space |
+| キャンセル | B | X |
+| ポーズ・帰還 | START | Esc |
+| アイテム選択 / 使用 | L / R で選択、Y で使用 | Q / E で選択、C で使用 |
+| 言語・音量 | タイトルの「オプション」(戦闘中は START → オプション) | |
 
-## 構成
+---
 
-```
-main.py            起動 (320x240 / 60fps)
-config.py          画面サイズ・オブジェクト上限
-game.py            シーンスタック + Scene 基底
-core/   input.py   入力正規化   spatial.py 空間ハッシュ   sprites.py プロトタイプ絵   audio.py SE/BGM   palette.py 32色パレット
-data/   enemies.py 敵表   weapons.py 武器・パッシブ表   waves.py ウェーブ表
-entities/ player / enemy / bullet / pickup / particle
-systems/ spawner.py 出現   weapons.py 発射 (一斉/連射/ハンマー/衛星)   collision.py 当たり判定   upgrades.py 3択抽選
-scenes/ title / options / play (メインループ) / levelup / pause / result
-ui/     hud.py     menu.py   font.py (BDF フォント)
-```
+## 動かし方
 
-## ストーリーモード
+### 必要なもの
+- Python 3.10 以上
+- [Pyxel](https://github.com/kitao/pyxel) 2.9 以上 (`pip install pyxel`)
 
-タイトル「はじめから / つづきから」→ 街 (`scenes/town.py`) → 酒場で依頼受注 → 出発 → 戦闘 (依頼の条件付き) → 帰還リザルト → 街。
-「サバイバル (検証用)」は従来の 10 分モード。
-
-- セーブ: `core/save.py` が `user_data_dir/save.json` に保存 (`core/state.py` の GameState)
-- 依頼: `data/quests.py` (生存 / 討伐)、ウェーブ表は `data/waves.py` の `WAVES[キー]`
-- 会話の表示は 2 種類: 街用 (白い窓 + 立ち絵) と、`> @vn bg=画像名` を付けたビジュアルノベル風 (全画面背景 + 暗い窓 + 名前札)。VN 用の絵は `op_bg` (オープニング) / `forest_bg` (占い師) / `valley_bg` (書の発見) / `night_bg` (エンディング) を **320x180 (16:9)** で置く (画面上部にそのまま表示、下 60px が会話窓)
-- 施設の出入り・出発・帰還は `game.push_fade / pop_fade / replace_fade` で暗転する
-- 会話: **`assets/story.md`** (Markdown、書式はファイル冒頭) を `data/story.py` が起動時に読み、`scenes/dialog.py` が表示。後編の導入は `assets/story_teaser.md`。ストーリー資料と後編の草稿は `private/` (リポジトリ非公開)。`python3 tools/check_story.py` でキーの漏れを検証。話者の `img` に対応する `assets/img/<名前>.png` があれば立ち絵 (64x64) を出す
-- 画像: `tools/convert_png.py <png> <名前> [幅 高さ]` で 64 色に減色して `assets/img/` へ。`core/images.py` が読み込む
-  - 街の背景 `town_bg.png` (234x156)、タイトル `title_bg.png` (320x240)、酒場 `tavern_bg.png` (234x156)
-  - NPC 立ち絵 (64x64) は `npc_master` / `npc_inn` / `npc_shop` / `npc_smith` / `npc_king`。**小さい絵は `--nodither` の方がきれい** (ディザは 64px だと潰れる)。元絵 (1:1) を切り抜かずそのまま変換するのが正 (雰囲気と小道具が伝わる)。顔を大きく見せたい場合だけ元絵側でクロップする。立ち絵は不透明で描く (透過なし)
-- 帰還ルール: HP 持ち越し (50% 未満なら 50% に補正)、戦闘不能は拾った金が半分、撤退は依頼失敗
-- 武器スロットは章で決まる (`core/state.py` の SLOTS_BY_CHAPTER)、レベルアップ候補は所持装備のみ
-- 武器屋: `data/shop.py` (品揃え・価格・ランク費)。雑貨屋: `data/items.py`。ラン中のアイテム効果: `systems/items.py`
-
-## バランス調整のポイント
-
-- 敵の出現量: `data/waves.py`
-- 敵の強さ: `data/enemies.py` (+ `systems/spawner.py` の `hp_mult` で時間経過補正)
-- 武器の伸び: `data/weapons.py` の `levels`
-- レベル必要 XP: `entities/player.py` の `need_xp`
-- 同時数上限: `config.py`
-
-## 開発メモ
-
-- `pyxel.perf_monitor(True)` を `main.py` で有効にするとフレーム時間が見える。
-- 実機 (ハンドヘルド) で 60fps が出ない場合は `config.py` の上限を下げるか、`FPS = 30` にして速度定数を 2 倍にする。
-
-## 実機 (plumOS-Bubble / RK3566) での実行
-
+### 起動
 ```bash
-SSHPASS=<password> ./deploy_bubble.sh run
+python3 main.py
 ```
-
-- 転送先: `/storage/user/Roms/pyxel/Bit-Rate-Rush/`
-- 起動は plumOS の `plumos-pyxel-bubble-launch` 経由 (CPU を performance に切替、KMSDRM + Mali、640x480 に整数倍フィット)
-- **フロントエンド (plumos-controller-ui-fbdev) は止めてから実行する。** 同時に動かすと描画が競合してフレームが落ちる。`plumos-portmaster-frontend-control acquire / release` で停止・復帰できる (スクリプトが自動で行う)
-- ログ: `/storage/plumos/logs/pyxel/runtime.log`
-
-### 負荷計測
-
+またはパッケージ版 (`Bit-Rate-Rush.pyxapp`、[Releases](../../releases) から) を:
 ```bash
-SSHPASS=<password> ./deploy_bubble.sh bench stress 40   # 敵150体の上限負荷
-SSHPASS=<password> ./deploy_bubble.sh bench run 690     # 10分通し自動プレイ
+pyxel play Bit-Rate-Rush.pyxapp
 ```
 
-`bench.py` は無敵の自動プレイで 5 秒ごとに fps / update / draw の時間をログに出す。
+### 動作確認済みの環境
+- macOS (Pyxel 2.9.9)
+- Anbernic 系ハンドヘルド (plumOS-Bubble / RK3566、Pyxel 2.9.3)。`.pyxapp` を Pyxel の ROM フォルダに置く
 
-計測結果 (2026-09-13, performance governor, FE 停止):
+### セーブデータ
+Pyxel のユーザーデータ領域 (`pyxel.user_data_dir("kroot", "Bit-Rate-Rush")`) に `save.json` と `settings.json` が作られます。
 
-| ケース | fps | update | draw |
-|---|---|---|---|
-| 敵 150 体 + 全武器 Lv4 | 60.0 固定 | 4.4〜5.6ms (max 6.7) | 1.4〜1.8ms (max 2.6) |
+---
 
-→ 設計時の上限 (敵 150 / 弾 200 / ジェム 300) のままで 60fps に収まる。
+## 開発状況
 
-### pyxapp 化
+- **v1.0.0** — 前編 (ルーメン編)。本作の基本ゲームループと物語の前半
+- **v1.1.0 (予定)** — 後編 (アリア編)
 
-```bash
-# 実行に不要なファイルを除いた複製から作る (bench.py 等を含めない)
-rsync -a --exclude bench.py --exclude '*.sh' --exclude 'README.md' --exclude 'DESIGN*.md' --exclude dist --exclude tools --exclude docs --exclude art ./ /tmp/pkg/Bit-Rate-Rush/
-cd /tmp/pkg && pyxel package Bit-Rate-Rush Bit-Rate-Rush/main.py
-```
+不具合や遊んだ感想は [Issues](../../issues) へ。バランスは公開後の感想をもとに調整していきます。
 
-できた `Bit-Rate-Rush.pyxapp` を実機の `/storage/user/Roms/pyxel/` に置くとフロントエンドから起動できる。最新ビルドは `dist/Bit-Rate-Rush.pyxapp`。
+---
+
+## ライセンス
+
+| | |
+|---|---|
+| **ソースコード** | [PolyForm Noncommercial License 1.0.0](LICENSE) — **非商用目的** に限り、利用・改変・再配布できます |
+| **素材** (BGM、画像、立ち絵、アイコン、物語のテキスト) | [All rights reserved](LICENSE-assets.md) — 本ゲームの一部としてのみ利用できます |
+| **サードパーティ** (同梱フォント) | [THIRD-PARTY.md](THIRD-PARTY.md) |
+
+商用利用のご相談は著作者までお問い合わせください。
+
+**プルリクエストは現在受け付けていません。** 受け付ける場合は、その条件をここに記載します。
+
+Copyright (c) 2026 game-de-it
