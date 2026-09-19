@@ -74,6 +74,9 @@ class Game:
             if self.fade_t == self.fade_len + 1 and self.fade_cb:
                 cb, self.fade_cb = self.fade_cb, None
                 cb()
+                if self.fade_len >= self.FADE_SCENE:
+                    # 真っ暗な間に戦闘曲を 1 曲先読み (実機で ~1 秒止まるが見えない)
+                    audio.preload_battle(1)
             if self.fade_t > self.fade_len * 2:
                 self.fade_t = 0
             return

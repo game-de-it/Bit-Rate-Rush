@@ -60,11 +60,23 @@ class PlayScene(Scene):
         self.result = None      # "win" | "lose"
         self.pending_levelups = 0
         self.no_levelup = False  # デバッグ: レベルアップ停止
+        self.bgm_started = 0     # 今の戦闘曲をかけ始めたフレーム
 
     def enter(self):
-        # 戦闘曲は依頼開始時に 1 曲選んでループ。曲の途中切替は初回デコード (実機で ~1 秒) がプレイ中に走って止まるのでしない
+        # 戦闘曲: 出発の暗転中に 1 曲目をかけ、曲が終わるごとに update で次へ (シャッフル / 順番)。
+        # 曲のデコードは実機で ~1 秒止まるので、戦闘中はデコード済みの曲だけを使い、未読込の曲は暗転中に先読みする
         from core import settings
-        audio.bgm(settings.pick_battle_track(), battle=True)
+        audio.bgm(settings.pick_battle_track(), battle=True, loop=settings.get("battle_mode") == "select")
+        self.bgm_started = self.frame      # 先読みは game.fade の暗転中に 1 曲ずつ行う (出発・帰還・場面転換のたびに増える)
+
+    def next_battle_track(self):
+        from core import settings
+        name = settings.pick_battle_track(loaded_only=True)
+        if name is None or name == audio.bgm_now():
+            audio.replay()                     # 候補が無い: 今の曲をもう一度
+        else:
+            audio.bgm(name, battle=True, loop=False)
+        self.bgm_started = self.frame
 
     def exit(self):
         audio.bgm_stop()
@@ -115,6 +127,10 @@ class PlayScene(Scene):
         self.frame += 1
         p = self.player
         t_sec = self.frame / 60.0
+
+        # 戦闘曲が終わったら次の曲へ (曲が無い環境で毎フレーム探さないよう 2 秒は待つ)
+        if not audio.playing() and self.frame - self.bgm_started > 120:
+            self.next_battle_track()
 
         if self.quest and self.time_limit:
             q = self.quest
