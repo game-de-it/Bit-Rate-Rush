@@ -275,22 +275,25 @@
 - BIT-RATE-RUSH | BIT-RATE-RUSH
 -
 - 企画・ゲームデザイン | Game Design
-- kroot | kroot
+- game_de_it | game_de_it
 -
 - プログラム | Programming
-- kroot / Claude | kroot / Claude
+- game_de_it / Claude | game_de_it / Claude
 -
 - グラフィック | Graphics
-- kroot | kroot
+- game_de_it / ChatGPT | game_de_it / ChatGPT
 -
 - 音楽 | Music
-- kroot | kroot
+- game_de_it / Arrangement by Suno | game_de_it / Arrangement by Suno
 -
 - エンジン | Engine
 - Pyxel | Pyxel
 -
 - フォント | Font
 - M+ BITMAP FONTS | M+ BITMAP FONTS
+-
+-
+- Produced by moto
 -
 -
 - Thank you for playing | Thank you for playing
