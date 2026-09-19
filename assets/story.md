@@ -214,7 +214,7 @@
 ## castle_after_4
 > 4 章クリア後 (王の告白、タワー + FW)
 - narr: 王宮にて。 | At the castle.
-- king: 話そう。\nわしは若い頃、『レートの書』に従い、死者と\n兵たちの魂を捧げ、レートを下げてきた。 | I will tell you. In my youth I followed the Book and offered the souls of the dead and my men. The rate fell.
+- king: 話そう。\nわしは若い頃、『レートの書』に従い、死者と\n兵たちの魂を捧げ、レートを下げてきた。 | I will tell you. In my youth I followed the Book: I offered the souls of the dead and my men.
 - king: これが、かつて英雄と呼ばれた男の正体だ。 | That is the truth of the man they once called a hero.
 - king: だが死者の谷の魂は尽きた。\nもう魔王とは取引はしない。 | But the souls of the valley are spent. I will bargain with the Demon Lord no more.
 - king: 王家に残る最後の魔導具を授ける。\n……魔王を倒してくれ。 | I grant you the last relics left to the royal house.\n...Slay the Demon Lord.
