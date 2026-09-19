@@ -44,7 +44,8 @@ class OptionsScene(Scene):
             settings.set("battle_track", key)
         # その場で反映 / 試聴
         if self.in_battle or key not in ("shuffle", "sequence"):
-            audio.bgm(settings.pick_battle_track(advance=False), battle=True)
+            audio.bgm(settings.pick_battle_track(advance=False), battle=True,
+                      loop=settings.battle_loop_one() or not self.in_battle)
             self.previewed = True
 
     def close(self):

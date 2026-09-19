@@ -60,10 +60,16 @@ class PlayScene(Scene):
         self.result = None      # "win" | "lose"
         self.pending_levelups = 0
         self.no_levelup = False  # デバッグ: レベルアップ停止
+        self.bgm_started = 0     # 今の戦闘曲をかけ始めたフレーム
 
     def enter(self):
+        self.start_battle_track()
+
+    def start_battle_track(self):
+        """戦闘曲を 1 曲かける。シャッフル / 順番のときはループせず、曲が終わったら update で次の曲へ (プレイリスト)"""
         from core import settings
-        audio.bgm(settings.pick_battle_track(), battle=True)
+        audio.bgm(settings.pick_battle_track(), battle=True, loop=settings.battle_loop_one())
+        self.bgm_started = self.frame
 
     def exit(self):
         audio.bgm_stop()
@@ -114,6 +120,10 @@ class PlayScene(Scene):
         self.frame += 1
         p = self.player
         t_sec = self.frame / 60.0
+
+        # 戦闘曲が終わったら次の曲へ (曲が無い環境で毎フレーム探さないよう 2 秒は待つ)
+        if not audio.playing() and self.frame - self.bgm_started > 120:
+            self.start_battle_track()
 
         if self.quest and self.time_limit:
             q = self.quest

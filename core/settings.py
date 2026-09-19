@@ -58,6 +58,11 @@ def apply_volume():
     audio.set_volume(_data.get("bgm", 7), _data.get("se", 5), _data.get("battle_vol", 7))
 
 
+def battle_loop_one():
+    """曲固定 (select) のときだけ 1 曲をループ。シャッフル / 順番はプレイリストとして曲が終わるごとに次へ進む"""
+    return _data.get("battle_mode", "shuffle") == "select"
+
+
 def pick_battle_track(advance=True):
     """設定に従って戦闘曲を選ぶ。shuffle: 直前と違う曲をランダム / sequence: 順番 (advance で次へ) / それ以外: 指定曲。"""
     import random
@@ -77,6 +82,10 @@ def pick_battle_track(advance=True):
         return t if t in tracks else tracks[0]
     # シャッフル: 全曲を 1 巡してから次の巡へ (バッグ方式)。巡の境目でも同じ曲が続かないようにする
     last = _data.get("battle_last")
+    if not advance:
+        # 試聴など: 巡の状態を進めずに、直前と違う曲を 1 つ返す
+        cands = [t for t in tracks if t != last] or tracks
+        return random.choice(cands)
     bag = [t for t in _data.get("battle_bag", []) if t in tracks]
     if not bag:
         bag = list(tracks)

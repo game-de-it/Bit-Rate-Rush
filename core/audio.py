@@ -75,9 +75,9 @@ def pickup():
         pyxel.play(3, SE_PICKUP)
 
 
-def bgm(name, battle=False):
-    """assets/bgm/<name>.mp3 を ch0 でループ再生。同じ曲なら何もしない。初回のみデコード (実機で ~1 秒)。
-    battle=True なら戦闘 BGM の音量を使う。"""
+def bgm(name, battle=False, loop=True):
+    """assets/bgm/<name>.mp3 を ch0 で再生 (既定はループ)。同じ曲なら何もしない。初回のみデコード (実機で ~1 秒)。
+    battle=True なら戦闘 BGM の音量を使う。loop=False は戦闘のプレイリスト再生用 (曲が終わったら呼び出し側が次を選ぶ)。"""
     global _bgm_now, _bgm_is_battle
     if name == _bgm_now:
         if battle != _bgm_is_battle:
@@ -103,7 +103,7 @@ def bgm(name, battle=False):
     pyxel.stop(0)
     _bgm_is_battle = battle
     _apply_bgm_gain()
-    pyxel.play(0, slot, loop=True)
+    pyxel.play(0, slot, loop=loop)
     _bgm_now = name
 
 
