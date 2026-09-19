@@ -77,6 +77,8 @@ Five chapters. You start with one weapon; slots grow as the chapters advance, an
 | Items | L / R select, Y use | Q / E select, C use |
 | Language, volume | Title → Options (in battle: START → Options) | |
 
+The game starts in English. Japanese can be selected under Options → Language (the setting is saved).
+
 ---
 
 ## Running it

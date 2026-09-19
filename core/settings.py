@@ -6,7 +6,7 @@ import pyxel
 
 from core import i18n
 
-_data = {"lang": "ja", "bgm": 7, "se": 5, "battle_vol": 7, "battle_mode": "shuffle", "battle_track": "", "battle_seq": 0}
+_data = {"lang": "en", "bgm": 7, "se": 5, "battle_vol": 7, "battle_mode": "shuffle", "battle_track": "", "battle_seq": 0}
 
 
 def _path():
@@ -26,7 +26,7 @@ def load():
                 _data.update(json.load(f))
         except Exception:
             pass
-    i18n.set_lang(_data.get("lang", "ja"))
+    i18n.set_lang(_data.get("lang", "en"))
     apply_volume()
 
 
