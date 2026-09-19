@@ -2,12 +2,12 @@
 
 ![Bit-Rate-Rush](docs/shots/title.png)
 
-日本語 ・ [English](README.en.md)
+日本語 ・ [English](README.en.md) ・ **[公式サイト](https://game-de-it.github.io/bit-rate-rush-web/)**
 
-> **ナイフ一本、押し寄せる群れ。生き延びた分だけ、街は君を知っていく。**
+> **魔物の群れが押し寄せる戦場を、ナイフ一本で生き延びろ。街へ戻れば、次の依頼と物語が待っている。**
 
-「動くだけで戦う」サバイバルアクションに、街と依頼と物語を重ねた 2D ドット絵 RPG です。
-[Pyxel](https://github.com/kitao/pyxel) 製。320×240、64 色、日本語 / 英語。
+移動するだけで戦えるサバイバルアクションに、街と依頼と物語を組み合わせた 2D ドット絵 RPG。
+[Pyxel](https://github.com/kitao/pyxel) 製。320×240、64 色、日本語 / 英語対応。
 
 ---
 

@@ -2,11 +2,11 @@
 
 ![Bit-Rate-Rush](docs/shots/title.png)
 
-[日本語](README.md) ・ English
+[日本語](README.md) ・ English ・ **[Official site](https://game-de-it.github.io/bit-rate-rush-web/index.en.html)**
 
-> **One knife. An endless tide. Every minute you survive, the town learns your name a little better.**
+> **Survive a battlefield flooded with monsters, armed with nothing but a knife. Back in town, the next job and the next chapter of the story are waiting.**
 
-A 2D pixel-art RPG that layers a town, quests and a story on top of "move-to-fight" survival action.
+A 2D pixel-art survival action RPG that combines a town, jobs and a story with "move-to-fight" action.
 Built with [Pyxel](https://github.com/kitao/pyxel). 320×240, 64 colours, Japanese / English.
 
 ---
