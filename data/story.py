@@ -14,6 +14,7 @@ DIALOGS = {}
 OPTIONS = {}     # key -> dict(vn=True, bg="forest_bg") など。story.md の `> @vn bg=...` 行
 PAGE_BG = {}     # key -> {ページ番号: (画像名, フェードするか)}。ページの途中に置いた `> @vn bg=...` で以降のページの絵を切り替える (`nofade` でカット)
 PAGE_BGM = {}    # key -> {ページ番号: 曲名}。ページの途中に置いた `> @bgm=曲名` でそのページから曲を切り替える (`stop` で停止)
+CREDITS = []     # スタッフロール。story.md の `## credits` (1 行 1 項目 `- 日本語 | English`、`-` だけの行は空行)
 
 
 def _split(text, n):
@@ -30,6 +31,7 @@ def load(path=PATH, extra=(PATH_TEASER, PATH_PART2)):
     OPTIONS.clear()
     PAGE_BG.clear()
     PAGE_BGM.clear()
+    CREDITS.clear()
     _load_file(path)
     for p in extra:
         if os.path.exists(p):
@@ -43,7 +45,9 @@ def _load_file(path):
             line = raw.rstrip("\n")
             if line.startswith("## "):
                 cur = line[3:].strip()
-                if cur != "@speakers":
+                if cur == "credits":
+                    CREDITS.clear()
+                elif cur != "@speakers":
                     DIALOGS[cur] = []
                 continue
             if line.startswith("> @") and cur:
@@ -70,6 +74,14 @@ def _load_file(path):
                         opt[tok] = True
                 continue
             if line.startswith("#") or line.startswith(">") or not line.strip():
+                continue
+            if cur == "credits":
+                # `- 日本語 | English`。`-` だけなら空行。話者は書かない
+                if line.strip() == "-":
+                    CREDITS.append(("", ""))
+                elif line.startswith("- "):
+                    ja, en = _split(line[2:], 2)
+                    CREDITS.append((ja, en if en else ja))
                 continue
             if not line.startswith("- ") or cur is None:
                 continue

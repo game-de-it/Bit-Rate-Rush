@@ -42,6 +42,8 @@ try:
     from ui import window as UI
     dx, dy, dw, dh = UI.DIALOG
     for k, pages in DIALOGS.items():
+        if k == "credits":
+            continue
         for i, (spk, (ja, en)) in enumerate(pages):
             vn = OPTIONS.get(k, {}).get("vn")
             if vn:

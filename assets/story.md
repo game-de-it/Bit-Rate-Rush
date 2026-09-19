@@ -9,6 +9,7 @@
 - 文中の半角スペースは「ここで折り返してよい」の印 (収まらないときだけ改行)。`\n` (2 文字) は必ず改行
 - `> @vn bg=画像名` を会話の先頭に置くと、ビジュアルノベル風 (上に 16:9 の絵 320x180、下に会話窓、立ち絵なし) で表示する。画像は assets/img/<画像名>.png、無ければ直前の画面を暗くして使う。窓は 3 行まで。話者に立ち絵があれば窓の左に小さく出る (`> @vn nopic` で消せる)
 - ページの途中に `> @vn bg=画像名` を置くと、以降のページの絵がクロスフェードで切り替わる (拡張子は書いても無視される)。`> @vn bg=画像名 nofade` でフェードなしのカット切り替え
+- `## credits` はスタッフロール。1 行 1 項目で `- 日本語 | English`、`-` だけの行は空行。話者は書かない。1 行目は金色で表示される
 - `> @bgm=曲名` で BGM を指定できる (assets/bgm/<曲名>.mp3、ループ再生)。会話の先頭に置けば会話開始時、ページの途中に置けばそのページから切り替わる。`> @bgm=stop` で停止。VN でない会話にも使える。`> @vn bg=xxx bgm=yyy` のように 1 行にまとめても良い
 
 
@@ -268,6 +269,31 @@
 > @vn bg=rush_of_war.png
 - narr: 人々に、本当の地獄を味わわせるために――。 | So that they may taste true hell ―.
 
+
+## credits
+> スタッフロール (ending_night のあと、下から上へ流れる)。1 行目だけ金色
+- BIT-RATE-RUSH | BIT-RATE-RUSH
+-
+- 企画・ゲームデザイン | Game Design
+- kroot | kroot
+-
+- プログラム | Programming
+- kroot / Claude | kroot / Claude
+-
+- グラフィック | Graphics
+- kroot | kroot
+-
+- 音楽 | Music
+- kroot | kroot
+-
+- エンジン | Engine
+- Pyxel | Pyxel
+-
+- フォント | Font
+- M+ BITMAP FONTS | M+ BITMAP FONTS
+-
+-
+- Thank you for playing | Thank you for playing
 
 
 # 依頼の説明 (酒場で依頼を選んだときのマスターの説明。任意: 無ければ data/quests.py の文を使う)

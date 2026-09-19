@@ -11,30 +11,17 @@ from core.i18n import tt
 from game import Scene
 from ui import font
 
-CREDITS = [
+# スタッフロールの文言は assets/story.md の `## credits` で編集する。無いときの予備
+FALLBACK_CREDITS = [
     ("BIT-RATE-RUSH", "BIT-RATE-RUSH"),
-    ("", ""),
-    ("企画・ゲームデザイン", "Game Design"),
-    ("kroot", "kroot"),
-    ("", ""),
-    ("プログラム", "Programming"),
-    ("kroot / Claude", "kroot / Claude"),
-    ("", ""),
-    ("グラフィック", "Graphics"),
-    ("kroot", "kroot"),
-    ("", ""),
-    ("音楽", "Music"),
-    ("kroot", "kroot"),
-    ("", ""),
-    ("エンジン", "Engine"),
-    ("Pyxel", "Pyxel"),
-    ("", ""),
-    ("フォント", "Font"),
-    ("M+ BITMAP FONTS", "M+ BITMAP FONTS"),
-    ("", ""),
     ("", ""),
     ("Thank you for playing", "Thank you for playing"),
 ]
+
+
+def credits():
+    from data.story import CREDITS
+    return CREDITS or FALLBACK_CREDITS
 
 
 class EndingScene(Scene):
@@ -60,7 +47,7 @@ class EndingScene(Scene):
     def update(self):
         self.t += 1
         if self.phase == "credits":
-            if (self.t > 60 * 14 + len(CREDITS) * 14 or (self.t > 120 and self.inp.confirm)) and not self.game.fade_t:
+            if (self.t > 60 * 14 + len(credits()) * 14 or (self.t > 120 and self.inp.confirm)) and not self.game.fade_t:
                 def to_rush():
                     self.phase = "rush"
                     self.t = 0
@@ -100,7 +87,7 @@ class EndingScene(Scene):
             pyxel.dither(1.0)
         elif self.phase == "credits":
             y0 = H - self.t * 0.5
-            for i, (ja, en) in enumerate(CREDITS):
+            for i, (ja, en) in enumerate(credits()):
                 y = y0 + i * 14
                 if -12 < y < H:
                     font.center(y, tt((ja, en)), P.GOLD if i == 0 else 7)
