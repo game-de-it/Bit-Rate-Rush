@@ -69,6 +69,7 @@ class Game:
 
     def update(self):
         self.input.poll()
+        audio.update()
         if self.fade_t:
             self.fade_t += 1
             if self.fade_t == self.fade_len + 1 and self.fade_cb:

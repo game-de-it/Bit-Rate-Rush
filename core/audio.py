@@ -75,11 +75,21 @@ def pickup():
         pyxel.play(3, SE_PICKUP)
 
 
+# 未デコードの曲は、止めてから数フレーム置いてデコードする。
+# デコード中 (実機で ~1 秒) は音声が更新されないので、直前の音が残っていると Web 版でバッファ切れのノイズ (ブブブ) になる。
+# 止めた直後は音声側にまだ前の曲の断片が残っているため、無音が確実に出力されてからデコードする
+DECODE_DELAY = 15       # フレーム (250ms)
+_pending = None         # (name, battle, loop, is_jingle)
+_pending_t = 0
+
+
 def bgm(name, battle=False, loop=True):
     """assets/bgm/<name>.mp3 を ch0 で再生 (既定はループ)。同じ曲なら何もしない。初回のみデコード (実機で ~1 秒)。
     battle=True なら戦闘 BGM の音量を使う。loop=False は戦闘のプレイリスト再生用 (曲が終わったら呼び出し側が次を選ぶ)。"""
-    global _bgm_now, _bgm_is_battle
+    global _bgm_now, _bgm_is_battle, _pending
     if name == _bgm_now:
+        if _pending is not None:
+            return                          # デコード待ち中: タイマーを戻さない
         if battle != _bgm_is_battle:
             _bgm_is_battle = battle
             _apply_bgm_gain()
@@ -87,16 +97,42 @@ def bgm(name, battle=False, loop=True):
     if name is None:
         bgm_stop()
         return
-    # 先に今の曲を止めてからデコードする。デコード中 (実機で ~1 秒) は音声が更新されないので、
-    # 鳴らしたままだと Web 版で「ブブブ」というバッファ切れのノイズになる
-    bgm_stop()
+    if name not in _bgm_slot:
+        bgm_stop()
+        _pending = (name, battle, loop, False)
+        _bgm_now = name
+        return
+    _start(name, battle, loop)
+
+
+def _start(name, battle, loop):
+    global _bgm_now, _bgm_is_battle
     slot = _load(name)
+    pyxel.stop(0)
     if slot is None:
+        _bgm_now = None
         return
     _bgm_is_battle = battle
     _apply_bgm_gain()
     pyxel.play(0, slot, loop=loop)
     _bgm_now = name
+
+
+def update():
+    """毎フレーム呼ぶ (Game.update の先頭)。止めてから DECODE_DELAY 経ったらデコードして鳴らす"""
+    global _pending, _pending_t
+    if _pending is None:
+        return
+    _pending_t += 1
+    if _pending_t < DECODE_DELAY:
+        return
+    name, battle, loop, is_jingle = _pending
+    _pending = None
+    _pending_t = 0
+    if is_jingle:
+        _start_jingle(name)
+    else:
+        _start(name, battle, loop)
 
 
 def _load(name):
@@ -117,10 +153,22 @@ def _load(name):
 
 
 def jingle(name):
-    """ch0 で 1 回だけ再生 (ループなし)。BGM は止まる。"""
+    """ch0 で 1 回だけ再生 (ループなし)。BGM は止まる。曲が無ければ False"""
+    global _pending
+    if not os.path.exists(os.path.join(BGM_DIR, f"{name}.mp3")):
+        bgm_stop()
+        return False
+    if name not in _bgm_slot:
+        bgm_stop()
+        _pending = (name, False, False, True)
+        return True
+    return _start_jingle(name)
+
+
+def _start_jingle(name):
     global _bgm_now
-    bgm_stop()
     slot = _load(name)
+    pyxel.stop(0)
     if slot is None:
         return False
     pyxel.channels[0].gain = _vol["bgm"] / 10.0
@@ -130,11 +178,13 @@ def jingle(name):
 
 
 def playing():
-    """ch0 が再生中か。"""
-    return pyxel.play_pos(0) is not None
+    """ch0 が再生中か (デコード待ちも再生中扱い)。"""
+    return _pending is not None or pyxel.play_pos(0) is not None
 
 
 def bgm_stop():
-    global _bgm_now
+    global _bgm_now, _pending, _pending_t
     pyxel.stop(0)
     _bgm_now = None
+    _pending = None
+    _pending_t = 0
