@@ -6,7 +6,8 @@ from game import Scene
 
 
 def rest_cost(state):
-    return 30 * state.chapter
+    from core import growth
+    return int(30 * state.chapter * growth.discount(state))
 
 
 class InnScene(Scene):
@@ -26,10 +27,14 @@ class InnScene(Scene):
             st.flags[key] = True
             self.game.push(DialogScene(self.game, key, on_done=self.enter))
             return
-        if st.hp >= st.maxhp:
-            self.game.push(DialogScene(self.game, "inn_full", on_done=self.game.pop_facility))
-            return
         cost = rest_cost(st)
+
+        pts = f" +{st.points}" if st.points else ""
+        train_choice = (t("inn.train").format(st.hero_lv, pts), self.open_train)
+        if st.hp >= st.maxhp:
+            self.game.push(DialogScene(self.game, "inn_full",
+                                       choices=[train_choice, (t("inn.leave"), self.game.pop_facility)]))
+            return
 
         def rest():
             if st.gold < cost:
@@ -43,7 +48,17 @@ class InnScene(Scene):
             self.game.push(DialogScene(self.game, "inn_rest", on_done=self.game.pop_facility))
 
         self.game.push(DialogScene(self.game, "inn_hello",
-                                   choices=[(t("inn.rest_cost").format(cost), rest), (t("inn.leave"), self.game.pop_facility)]))
+                                   choices=[(t("inn.rest_cost").format(cost), rest), train_choice,
+                                            (t("inn.leave"), self.game.pop_facility)]))
+
+    def open_train(self):
+        from scenes.train import TrainScene
+        self.game.push(TrainScene(self.game, self.state))
+
+    def resume(self):
+        # 鍛錬 (TrainScene) から戻ったら宿屋の会話をやり直す
+        if isinstance(self.game.stack[-1], InnScene):
+            self.enter()
 
     def update(self):
         pass

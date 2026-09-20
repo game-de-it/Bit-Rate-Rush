@@ -37,6 +37,7 @@ class ResultScene(Scene):
         self.reward = 0
         if self.quest_ok:
             first = play.quest_id not in st.cleared
+            self.first_clear = first
             self.reward = int(q["reward"] * (1.0 if first else 0.7))
             if first:
                 st.cleared.append(play.quest_id)
@@ -58,6 +59,11 @@ class ResultScene(Scene):
             st.quest = None          # 失敗: 受注し直せる
         st.gold += self.gold_found + self.reward
         st.items = list(play.player.items)      # 使った消耗品は戻らない
+        # 熟練 EXP
+        from core import growth
+        boss_killed = any(k in play.kill_count for k in ("forest_lord", "boss1", "boss2", "knight"))
+        self.exp_gain = growth.run_exp(play, self.quest_ok, getattr(self, "first_clear", False), boss_killed)
+        self.hero_ups = growth.add_exp(st, self.exp_gain)
         # HP: 帰還時の値を持ち越し。50% 未満なら 50% に補正。戦闘不能は 50%
         # ラン中の最大 HP 増加 (生命の心臓) は持ち帰らない: 街の上限 (100) に丸める
         hp = 0 if dead else min(play.player.hp, st.maxhp)
@@ -91,7 +97,7 @@ class ResultScene(Scene):
             if self.t > 60 and (self.t // 30) % 2 == 0:
                 font.center(py + 80, t("res.press"), 6)
             return
-        pw, ph = 220, 150
+        pw, ph = 220, 164
         px, py = (W - pw) // 2, (H - ph) // 2
         draw_panel(px, py, pw, ph)
         dead = self.play.outcome == "dead"
@@ -105,6 +111,9 @@ class ResultScene(Scene):
         font.text(px + 12, y, f"{t('res.reward')}", 7)
         font.right(y, f"{self.reward} G", P.GOLD, px + pw - 12); y += 14
         font.text(px + 12, y, t("res.hp"), 7)
-        font.right(y, f"{int(self.hp_after)}/{self.play.state.maxhp}", 7, px + pw - 12); y += 18
+        font.right(y, f"{int(self.hp_after)}/{self.play.state.maxhp}", 7, px + pw - 12); y += 14
+        font.text(px + 12, y, t("res.exp"), 7)
+        ups = f"  {t('res.hero_up')} Lv{self.play.state.hero_lv}" if self.hero_ups else ""
+        font.right(y, f"+{self.exp_gain}{ups}", P.ACCENT if self.hero_ups else 7, px + pw - 12); y += 18
         if self.t > 60 and (self.t // 30) % 2 == 0:
             font.center(y + 6, t("res.to_town"), 6)

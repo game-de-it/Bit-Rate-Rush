@@ -4,6 +4,7 @@ import pyxel
 from core import audio, images, save
 from core.i18n import t, tt
 from data.items import ITEMS, MAX_ITEMS, stock as item_stock
+from core import growth
 from data.shop import WEAPON_STOCK, RANK_COST, MAX_RANK, stock as weapon_stock
 from data.weapons import WEAPONS
 from game import Scene
@@ -34,7 +35,7 @@ class ShopScene(Scene):
                 if k in st.weapons:
                     r = st.weapons[k]
                     if r < MAX_RANK:
-                        out.append(("rank", k, RANK_COST[r + 1]))
+                        out.append(("rank", k, int(RANK_COST[r + 1] * growth.discount(self.state))))
                     else:
                         out.append(("max", k, 0))
                 else:
@@ -42,7 +43,7 @@ class ShopScene(Scene):
             # 所持中でまだ品揃えに無い武器 (ナイフ) の強化も出す
             for k, r in st.weapons.items():
                 if k not in WEAPON_STOCK:
-                    out.insert(0, ("rank", k, RANK_COST[r + 1]) if r < MAX_RANK else ("max", k, 0))
+                    out.insert(0, ("rank", k, int(RANK_COST[r + 1] * growth.discount(self.state))) if r < MAX_RANK else ("max", k, 0))
             return out
         return [("item", k, ITEMS[k]["price"]) for k in item_stock(st)]
 

@@ -39,6 +39,8 @@ class PlayScene(Scene):
             self.player.hp = state.hp
             self.player.ranks = dict(state.weapons)
             self.player.items = list(state.items)
+            from core import growth
+            growth.apply_to_player(state, self.player)
         for k in start_weapons:
             self.player.add_weapon(k)
         self.time_limit = self.quest["time_limit"] * 60 if self.quest else None
@@ -161,6 +163,13 @@ class PlayScene(Scene):
 
         if self.quest:
             self.check_quest()
+        if p.hp <= 0 and p.revive:
+            # 不屈: 1 回だけ復活
+            p.revive = False
+            p.hp = p.maxhp * 0.5
+            p.inv = 120
+            audio.se(audio.SE_LEVELUP)
+            self.shake = 6
         if p.hp <= 0:
             self.result = "lose"
             self.outcome = "dead"
@@ -432,7 +441,7 @@ class PlayScene(Scene):
                     p.hp = min(p.maxhp, p.hp + 30)
                     audio.se(audio.SE_LEVELUP)
                 elif g.kind == "coin":
-                    self.gold += g.value
+                    self.gold += int(g.value * (1 + p.gold_bonus)) if p.gold_bonus else g.value
                     audio.pickup()
                 else:
                     p.magnet_pending = True

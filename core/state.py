@@ -32,6 +32,12 @@ class GameState:
         self.equip = "knife"            # 出発時の初期武器
         self.day = 1
         self.stored = []                # 預けた装備 kind (戦闘中のレベルアップ候補に出ない)
+        # 主人公の成長 (core/growth.py)
+        self.exp = 0                    # 熟練 EXP (次の Lv までの分)
+        self.hero_lv = 1                # 熟練 Lv
+        self.points = 0                 # 未使用ポイント
+        self.growth = {}                # 基礎能力 key → 振った数
+        self.skills = {}                # スキル key → True
 
     # --- 派生 ---
     @property
@@ -68,7 +74,8 @@ class GameState:
         return dict(chapter=self.chapter, gold=self.gold, maxhp=self.maxhp, hp=self.hp,
                     weapons=self.weapons, magic=self.magic, items=self.items, materials=self.materials,
                     quest=self.quest, cleared=self.cleared, flags=self.flags, buff=self.buff,
-                    runs=self.runs, day=self.day, equip=self.equip, stored=self.stored)
+                    runs=self.runs, day=self.day, equip=self.equip, stored=self.stored,
+                    exp=self.exp, hero_lv=self.hero_lv, points=self.points, growth=self.growth, skills=self.skills)
 
     @classmethod
     def from_dict(cls, d):

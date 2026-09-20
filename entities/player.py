@@ -53,6 +53,12 @@ class Player:
         self.item_cursor = 0
         self.shield = 0              # 無敵アイテムの残りフレーム
         self.sharpen = 0             # 砥石: 攻撃力 +50% の残りフレーム
+        # 熟練 (core/growth.apply_to_player が設定)
+        self.might_bonus = 0.0
+        self.pick_bonus = 0.0
+        self.bits_bonus = 0.0
+        self.gold_bonus = 0.0
+        self.revive = False          # 不屈: 残り 1 回
 
     @staticmethod
     def need_xp(level):
@@ -68,7 +74,7 @@ class Player:
 
     @property
     def might(self):
-        return (1 + 0.1 * self.passives.get("might", 0)) * (1.5 if self.sharpen > 0 else 1.0)
+        return (1 + 0.1 * self.passives.get("might", 0) + self.might_bonus) * (1.5 if self.sharpen > 0 else 1.0)
 
     @property
     def cooldown(self):
@@ -76,7 +82,7 @@ class Player:
 
     @property
     def magnet(self):
-        return 24 * (1 + 0.25 * self.passives.get("magnet", 0))
+        return 24 * (1 + 0.25 * self.passives.get("magnet", 0) + self.pick_bonus)
 
     @property
     def extra_amount(self):
@@ -100,7 +106,7 @@ class Player:
         return w
 
     def gain_xp(self, v):
-        self.xp += v
+        self.xp += v * (1 + self.bits_bonus) if self.bits_bonus else v
 
     def check_level_up(self):
         if self.xp >= self.xp_next:
