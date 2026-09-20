@@ -89,7 +89,7 @@ STR = {
     "stash.equip": ("初期武器", "Starting"),
     "stash.stored": ("預けている", "Stashed"),
     "stash.carry": ("持ち込む", "Carry"),
-    "stash.hint": ("A: 切替  B: 戻る   預けた装備は戦闘中に出ない", "A: toggle  B: back   Stashed gear stays out of battle"),
+    "stash.hint": ("A: 切替  B: 戻る   預けた装備は戦闘中に出ない", "A: toggle  B: back   Stashed gear won't show up"),
     "depart.back": ("戻る", "Back"),
     "goal.survive": ("{0} 生き延びる", "Survive {0}"),
     "goal.kill": ("{0} を {1} 体倒す", "Defeat {1} {0}"),
