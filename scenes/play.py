@@ -2,7 +2,7 @@ import random
 
 import pyxel
 
-from config import W, H, DESPAWN_DIST2, RUN_LENGTH
+from config import W, H, DESPAWN_DIST2, RUN_LENGTH, MAX_PARTICLES
 from data.quests import QUESTS
 from core import audio
 from core import palette as P
@@ -12,6 +12,7 @@ from entities.player import Player
 from entities.enemy_bullet import EnemyBullet
 from entities import bullet as bullet_mod
 from entities.bullet import Bullet
+from entities.particle import Particle
 from systems import weapons, collision, items
 from systems.spawner import Spawner
 from ui import hud
@@ -53,6 +54,8 @@ class PlayScene(Scene):
         self.outcome = None        # "return" | "dead" | "retreat" | "timeup"
         self.final_rush = False    # ラッシュ (出現 2 倍) 中か
         self.stun_t = 0            # 煙玉: 敵が足を止める残りフレーム
+        self.intro_done = False    # 依頼の intro 会話を出したか
+        self.first_bit_done = False  # no_bits 依頼: 最初のビットが消えたときの会話を出したか
         self.bonus_rush = 0        # 討伐依頼: 制限時間後のボーナスラッシュの長さ (分)。撃破数 ÷ 目標数
         self.enemies = []
         self.bullets = []
@@ -79,6 +82,13 @@ class PlayScene(Scene):
         # 戦闘曲は依頼開始時に 1 曲選んでループ。曲の途中切替は初回デコード (実機で ~1 秒) がプレイ中に走って止まるのでしない
         from core import settings
         audio.bgm(settings.pick_battle_track(), battle=True)
+        if self.quest and self.quest.get("intro") and not self.intro_done:
+            # 戦闘開始直後の会話 (現地に着いたとき)。暗転中に積むので直接 push する
+            self.intro_done = True
+            from scenes.dialog import DialogScene
+            from data.story import OPTIONS
+            key = self.quest["intro"]
+            self.game.push(DialogScene(self.game, key, fade_out=bool(OPTIONS.get(key, {}).get("vn"))))
 
     def exit(self):
         audio.bgm_stop()
@@ -204,17 +214,18 @@ class PlayScene(Scene):
             self.clear_flash = 180
             audio.se(audio.SE_LEVELUP)
             if q.get("after"):
-                # 現地で起きる会話 (占い師との出会いなど)。戦闘は一時停止
-                self.push_story(q["after"])
+                # 現地で起きる会話 (占い師との出会いなど)。戦闘は一時停止。after2 があれば続けて
+                nxt = (lambda: self.push_story(q["after2"])) if q.get("after2") else None
+                self.push_story(q["after"], on_done=nxt)
 
-    def push_story(self, key):
+    def push_story(self, key, on_done=None):
         """戦闘中の物語会話。VN 会話なら暗転で出入りする (街用の窓なら暗転なし)。"""
         from scenes.dialog import DialogScene
         from data.story import OPTIONS
         if OPTIONS.get(key, {}).get("vn"):
-            self.game.push_fade(DialogScene(self.game, key, fade_out=True))
+            self.game.push_fade(DialogScene(self.game, key, fade_out=True, on_done=on_done))
         else:
-            self.game.push(DialogScene(self.game, key))
+            self.game.push(DialogScene(self.game, key, on_done=on_done))
 
     def start_rush(self):
         self.final_rush = True
@@ -435,6 +446,14 @@ class PlayScene(Scene):
                 g.alive = False
                 dead = True
                 if g.kind == "xp":
+                    if self.quest and self.quest.get("no_bits") and not self.cleared:
+                        # 後編の最初の依頼: ビットは人には拾えない (触れると消える)
+                        if len(self.particles) < MAX_PARTICLES:
+                            self.particles.append(Particle(g.x, g.y, 0.0, -0.6, 20, 12))
+                        if not self.first_bit_done and self.quest.get("first_bit"):
+                            self.first_bit_done = True
+                            self.push_story(self.quest["first_bit"])
+                        continue
                     p.gain_xp(g.value)
                     audio.pickup()
                 elif g.kind == "heal":

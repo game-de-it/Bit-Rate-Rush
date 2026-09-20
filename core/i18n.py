@@ -10,6 +10,8 @@ STR = {
     "title.survival": ("サバイバル (検証用)", "SURVIVAL (test)"),
     "title.dialogs": ("会話ビューア (検証用)", "DIALOG VIEWER (test)"),
     "ending.tbc": ("後編へ続く", "To be continued"),
+    "ending.fin": ("Bit-Rate-Rush  — 完 —", "Bit-Rate-Rush  — The End —"),
+    "title.part2": ("後編をはじめる", "START PART TWO"),
     "ending.tbc_sub": ("Bit-Rate-Rush アリア編", "Bit-Rate-Rush: Aria"),
     "title.chapter": ("章スタート (検証用)", "CHAPTER START (test)"),
     "title.stage": ("検証ステージ", "TEST STAGE"),
@@ -34,6 +36,8 @@ STR = {
     # 街
     "town.title": ("城下町", "Castle Town"),
     "town.castle": ("王宮", "Castle"),
+    "town.castle_p2": ("領主館", "Manor"),
+    "town.d.castle_p2": ("領主館。領主からの特別な依頼を受けられる。", "The manor. Special requests from the Lord."),
     "town.tavern": ("酒場", "Tavern"),
     "town.smith": ("武器屋", "Weaponsmith"),
     "town.shop": ("雑貨屋", "General Store"),

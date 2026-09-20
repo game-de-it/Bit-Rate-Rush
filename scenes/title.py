@@ -17,9 +17,12 @@ class TitleScene(Scene):
         self.cursor = 0
         self.anim = 0.0      # リール回転の残り (+1: 次へ, -1: 前へ)
         self.items = []
-        if save.exists():
+        self.saved = save.load() if save.exists() else None
+        if self.saved:
             self.items.append("title.continue")
         self.items += ["title.new"]
+        if self.saved and (self.saved.flags.get("cleared_once") or self.saved.chapter >= 6):
+            self.items.append("title.part2")
         if DEBUG_WEAPON_SELECT:
             self.items.append("title.survival")
         self.items.append("title.options")
@@ -67,6 +70,16 @@ class TitleScene(Scene):
                                                choices=[(t("title.overwrite"), start_new), (t("tavern.leave"), None)]))
                 else:
                     start_new()
+            elif key == "title.part2":
+                def start_p2():
+                    from core.state import new_part2_state
+                    st = new_part2_state()
+                    save.save(st)
+                    from scenes.town import TownScene
+                    self.game.replace_fade(TownScene(self.game, st, chapter_title=True))
+                from scenes.dialog import DialogScene
+                self.game.push(DialogScene(self.game, "new_game_confirm",
+                                           choices=[(t("title.overwrite"), start_p2), (t("tavern.leave"), None)]))
             elif key == "title.survival":
                 if DEBUG_WEAPON_SELECT:
                     from scenes.weapon_select import WeaponSelectScene

@@ -54,6 +54,7 @@ class DialogScene(Scene):
         self.page_bg = {}
         self.page_bgm = {}
         self.start_bgm = None
+        self.key = pages if isinstance(pages, str) else None     # 会話キー (デバッグ・検証用)
         if isinstance(pages, str):
             opt = OPTIONS.get(pages, {})
             self.page_bg = PAGE_BG.get(pages, {})

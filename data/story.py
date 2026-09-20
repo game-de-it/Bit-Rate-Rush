@@ -17,6 +17,44 @@ PAGE_BGM = {}    # key -> {ページ番号: 曲名}。ページの途中に置�
 CREDITS = []     # スタッフロール。story.md の `## credits` (1 行 1 項目 `- 日本語 | English`、`-` だけの行は空行)
 
 
+# 後編 (6 章〜) では会話キーを p2_ 付きに読み替える。番号付きのキーは後編内の章番号 (6 章 → 1) に直す。
+_P2_RENAME = {"mira_": "haru_", "castle_before_": "lord_before_", "castle_after_": "lord_after_"}
+
+
+def resolve(state, base):
+    """状態に応じた会話キー。後編なら p2_ 版があればそれを、無ければ番号なしの p2_ 版、それも無ければ base"""
+    if state is None or state.chapter < 6:
+        return base
+    stem, num = base, None
+    head, _, tail = base.rpartition("_")
+    if head and tail.isdigit():
+        stem, num = head, int(tail)
+        if num >= 6:
+            num -= 5                      # 通し章番号 → 後編内の番号
+    for a, b in _P2_RENAME.items():
+        if (stem + "_").startswith(a):
+            stem = b + (stem + "_")[len(a):]
+            stem = stem.rstrip("_")
+            break
+    cands = []
+    if num is not None:
+        cands.append(f"p2_{stem}_{num}")
+    cands.append(f"p2_{stem}")
+    for c in cands:
+        if c in DIALOGS:
+            return c
+    return base
+
+
+def bg_name(state, base):
+    """施設などの背景画像名。後編で p2_<base> が置かれていればそれを使う"""
+    if state is not None and state.chapter >= 6:
+        from core import images
+        if images.get(f"p2_{base}") is not None:
+            return f"p2_{base}"
+    return base
+
+
 def _split(text, n):
     parts = [p.strip() for p in text.split("|")]
     while len(parts) < n:

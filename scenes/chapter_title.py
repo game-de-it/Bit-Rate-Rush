@@ -6,7 +6,7 @@ from config import W, H
 from core import audio, images
 from core import palette as P
 from core.i18n import t, tt
-from data.chapters import CHAPTERS, FINAL_CHAPTER
+from data.chapters import CHAPTERS, FINAL_CHAPTER, is_final, local_number
 from game import Scene
 from ui import font
 
@@ -46,12 +46,12 @@ class ChapterTitleScene(Scene):
     def draw(self):
         pyxel.camera()
         pyxel.cls(0)
-        images.draw(f"chapter{self.chapter}", 0, 0)
         ch = CHAPTERS[self.chapter]
+        images.draw(ch.get("image", f"chapter{self.chapter}"), 0, 0)
         y0 = 180
         pyxel.rect(0, y0, W, H - y0, P.PANEL)
         pyxel.line(0, y0, W, y0, P.GOLD)
-        num = t("chapter.final") if self.chapter >= FINAL_CHAPTER else t("chapter.n").format(self.chapter)
+        num = t("chapter.final") if is_final(self.chapter) else t("chapter.n").format(local_number(self.chapter))
         rows = [(num, P.GOLD), (tt(ch["title"]), 7), (tt(ch["sub"]), 13)]
         for i, (s, col) in enumerate(rows):
             if self.t < 15 + i * 20:

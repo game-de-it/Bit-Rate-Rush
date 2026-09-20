@@ -44,20 +44,49 @@ class TownScene(Scene):
             self.game.push(DialogScene(self.game, "intro", fade_out=True,
                                        on_done=lambda: self.game.push(ChapterTitleScene(self.game, 1, on_done=lambda: audio.bgm("town")))))
             return
-        pending = self.state.flags.pop("pending_story", None)
+        from data.story import resolve, DIALOGS
+        st = self.state
+        pending = st.flags.pop("pending_story", None)
         if pending == "ending":
             from scenes.ending import EndingScene
             self.game.push(DialogScene(self.game, "ending_town",
-                                       on_done=lambda: self.game.replace_fade(EndingScene(self.game, self.state), length=60)))
+                                       on_done=lambda: self.game.replace_fade(EndingScene(self.game, st), length=60)))
+        elif pending == "ending2":
+            # 後編のエンディング (街には戻らず、谷から直接)
+            from scenes.ending2 import Ending2Scene
+            self.game.replace(Ending2Scene(self.game, st))
         elif pending:
             if pending.startswith("castle_after_"):
-                # 王の会話のあと、新しい章のタイトルを出す
+                # 王 (領主) の会話のあと、新しい章のタイトルを出す。会話が無ければタイトルだけ
                 from scenes.chapter_title import ChapterTitleScene
-                ch = self.state.chapter
-                self.game.push(DialogScene(self.game, pending, fade_out=True,
-                                           on_done=lambda: self.game.push(ChapterTitleScene(self.game, ch))))
+                ch = st.chapter
+                key = resolve(st, pending)
+
+                def after_title():
+                    # 後編最終章: 章タイトルのあと、決戦の前に占い師 (1 回だけ)
+                    if ch == 10 and not st.flags.get("p2_seer_5") and "p2_seer_5" in DIALOGS:
+                        st.flags["p2_seer_5"] = True
+                        self.game.push_fade(DialogScene(self.game, "p2_seer_5", fade_out=True))
+                    audio.bgm("town")
+                title = lambda: self.game.push(ChapterTitleScene(self.game, ch, on_done=after_title))
+                # 後編: 領主の会話のあと、占い師の小屋へ (7〜9 章クリア後 = p2_seer_2〜4)
+                old_ch = int(pending.rsplit("_", 1)[1])
+                seer = f"p2_seer_{old_ch - 5}" if 7 <= old_ch <= 9 else None
+                if seer in DIALOGS:
+                    nxt = lambda: self.game.push_fade(DialogScene(self.game, seer, fade_out=True, on_done=title))
+                else:
+                    nxt = title
+                if key in DIALOGS:
+                    self.game.push(DialogScene(self.game, key, fade_out=True, on_done=nxt))
+                else:
+                    nxt()
             else:
-                self.game.push(DialogScene(self.game, pending))
+                self.game.push(DialogScene(self.game, resolve(st, pending)))
+        elif st.chapter >= 6 and not st.flags.get("p2_town_intro") and "p2_town_intro" in DIALOGS:
+            # 後編: 港町に入った直後の説明 (1 回だけ)
+            st.flags["p2_town_intro"] = True
+            self.game.push(DialogScene(self.game, "p2_town_intro"))
+
 
     def resume(self):
         from scenes.chapter_title import ChapterTitleScene
@@ -112,23 +141,27 @@ class TownScene(Scene):
         # 背景
         bx, by, bw, bh = UI.BG
         if show_bg:
-            if not images.draw("town_bg", bx, by):
+            from data.story import bg_name
+            if not images.draw(bg_name(st, "town_bg"), bx, by):
                 UI.window(bx, by, bw, bh)
         # メニュー窓
         mx, my, mw, mh = UI.MENU
         UI.window(mx, my, mw, mh)
-        for i, (key, _) in enumerate(MENU):
+        for i, (key, fac) in enumerate(MENU):
             y = my + 6 + i * ROW
             sel = i == self.cursor
             if sel:
                 UI.sel_bar(mx + 3, y - 2, mw - 6)
+            if fac == "castle" and st.chapter >= 6:
+                key = "town.castle_p2"
             font.text(mx + 8, y, t(key), UI.TEXT if sel else UI.SUB)
         # ステータス (メニュー窓の下部)
         sy = my + mh - 40
         pyxel.line(mx + 4, sy - 3, mx + mw - 5, sy - 3, UI.SUB)
         from core import i18n
         day = f"{st.day}{t('town.day')}" if i18n.lang == "ja" else f"{t('town.day')} {st.day}"
-        font.text(mx + 5, sy, f"{t('town.chapter')}{st.chapter} {day}", UI.SUB)
+        from data.chapters import local_number
+        font.text(mx + 5, sy, f"{t('town.chapter')}{local_number(st.chapter)} {day}", UI.SUB)
         font.text(mx + 5, sy + 12, f"HP{int(st.hp)}/{st.maxhp}", P_HP if st.hp < st.maxhp * 0.5 else UI.TEXT)
         font.text(mx + 5, sy + 24, f"{st.gold}G", UI.GOLD)
 
@@ -137,7 +170,8 @@ class TownScene(Scene):
         dx, dy, dw, dh = UI.DIALOG
         UI.window(dx, dy, dw, dh)
         key = MENU[self.cursor][1]
-        font.text(dx + 10, dy + 8, t(f"town.d.{key}"), UI.TEXT)
+        dkey = f"town.d.{key}_p2" if (key == "castle" and self.state.chapter >= 6) else f"town.d.{key}"
+        font.text(dx + 10, dy + 8, t(dkey), UI.TEXT)
         q = self.state.quest
         qs = tt(QUESTS[q]["name"]) if q else t("town.noquest")
         font.text(dx + 10, dy + 26, f"{t('town.d.quest')}: {qs}", UI.ACCENT if q else UI.SUB)

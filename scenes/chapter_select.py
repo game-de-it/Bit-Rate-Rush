@@ -12,14 +12,15 @@ from game import Scene
 from ui import font
 from ui.menu import draw_overlay, draw_panel
 
-ROW = 16
+ROW = 13
 
 
 def make_state(chapter):
-    st = GameState()
+    from core.state import new_part2_state
+    st = new_part2_state() if chapter >= 6 else GameState()
     st.chapter = chapter
     st.gold = 99999
-    for ch in range(1, chapter):
+    for ch in range(6 if chapter >= 6 else 1, chapter):
         info = CHAPTERS[ch]
         st.cleared.append(info["castle"])
         for m in info["magic"]:
@@ -31,6 +32,7 @@ def make_state(chapter):
                 st.cleared.append(qid)
         if ch >= 2:
             st.flags["rumor_seer"] = True
+            st.flags["p2_rumor_seer"] = True
             st.flags[f"mira_{ch}"] = True
             # 2 章の隠し依頼 (占い師) もクリア済み → 衛星を所持
             for qid, q in QUESTS.items():
@@ -96,6 +98,11 @@ class ChapterSelectScene(Scene):
             if sel:
                 pyxel.rect(px + 4, y - 2, pw - 8, ROW - 2, 5)
                 font.text(px + 8, y, ">", P.ACCENT)
-            label = "ED  ラスボス撃破後 (エンディングから)" if ch == "ending" else f"{ch} 章  {tt(CHAPTERS[ch]['title'])}"
+            if ch == "ending":
+                label = "ED  ラスボス撃破後 (エンディングから)"
+            else:
+                from data.chapters import local_number
+                part = "後" if ch >= 6 else "前"
+                label = f"{part}{local_number(ch)} 章  {tt(CHAPTERS[ch]['title'])}"
             font.text(px + 20, y, label, 7 if sel else 6)
         font.center(py + ph - 14, "セーブは上書きされます", 13)

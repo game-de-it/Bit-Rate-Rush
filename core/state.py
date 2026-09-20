@@ -2,16 +2,25 @@
 
 # 章 → 武器スロット数 / パッシブ枠。前編 (1〜5 章) は武器 1→4、パッシブ 4。後編 (6 章〜) で武器 5→6、パッシブ 5→6 に広げる
 # (後編の章番号と増えるタイミングは戦闘バランスを見て調整する)
-SLOTS_BY_CHAPTER = {1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6}
-PASSIVE_SLOTS_BY_CHAPTER = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6}
+# 後編はアリアが新しい状態で始まるので、武器枠は 2 から (前編より 1 つ多い状態で始まり、最終章で 6)
+SLOTS_BY_CHAPTER = {1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6}
+PASSIVE_SLOTS_BY_CHAPTER = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4, 7: 4, 8: 5, 9: 5, 10: 6}
 
 
 def weapon_slots(chapter):
-    return SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 8 else 4)
+    return SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 10 else 4)
 
 
 def passive_slots(chapter):
-    return PASSIVE_SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 8 else 4)
+    return PASSIVE_SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 10 else 4)
+
+
+def new_part2_state():
+    """後編 (アリア編) の開始状態。前編のセーブは引き継がない (主人公が変わる)"""
+    st = GameState()
+    st.chapter = 6
+    st.flags = {"part2": True, "cleared_once": True}
+    return st
 
 
 class GameState:

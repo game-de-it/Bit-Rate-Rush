@@ -4,7 +4,7 @@ import pyxel
 from core import audio, images
 from core.i18n import t, tt
 from data.quests import QUESTS, offered
-from data.story import DIALOGS
+from data.story import DIALOGS, bg_name
 from data.enemies import ENEMIES
 from game import Scene
 from ui import font
@@ -33,22 +33,32 @@ class TavernScene(Scene):
     def enter(self):
         audio.bgm("tavern")
         from scenes.dialog import DialogScene
-        from data.story import DIALOGS
+        from data.story import DIALOGS, bg_name
+        from data.story import resolve
         st = self.state
         if st.quest:
-            key = "tavern_has_quest"
+            key = resolve(st, "tavern_has_quest")
         else:
-            key = f"tavern_hello_{st.chapter}" if f"tavern_hello_{st.chapter}" in DIALOGS else "tavern_hello"
+            key = resolve(st, f"tavern_hello_{st.chapter}")
+            if key not in DIALOGS:
+                key = resolve(st, "tavern_hello")
         if st.chapter == 2 and not st.flags.get("rumor_seer"):
             st.flags["rumor_seer"] = True          # 噂を聞くと占い師の依頼が並ぶ
             self.quests = offered(st)
-        if "tavern_first" in DIALOGS and not st.flags.get("tavern_first"):
+        if st.chapter == 7 and not st.flags.get("p2_rumor_seer"):
+            st.flags["p2_rumor_seer"] = True       # 後編: 港の外れの占い師
+            self.quests = offered(st)
+        first = resolve(st, "tavern_first")
+        if first in DIALOGS and not st.flags.get(first):
             # 初回だけ: 用語の説明 → 通常の挨拶
-            st.flags["tavern_first"] = True
+            st.flags[first] = True
             self.game.push(DialogScene(self.game, key))
-            self.game.push(DialogScene(self.game, "tavern_first"))
+            self.game.push(DialogScene(self.game, first))
             return
         self.game.push(DialogScene(self.game, key))
+
+    def speaker(self):
+        return "sena" if self.state.chapter >= 6 else "master"
 
     def update(self):
         inp = self.inp
@@ -72,9 +82,10 @@ class TavernScene(Scene):
             def accept():
                 self.state.quest = qid
                 audio.se(audio.SE_LEVELUP)
-                self.game.push(DialogScene(self.game, "tavern_accept", on_done=self.game.pop))
+                from data.story import resolve
+                self.game.push(DialogScene(self.game, resolve(self.state, "tavern_accept"), on_done=self.game.pop))
 
-            pages = DIALOGS.get(f"quest_{qid}") or [("master", q["text"])]
+            pages = DIALOGS.get(q.get("text_key") or f"quest_{qid}") or [(self.speaker(), q["text"])]
             self.game.push(DialogScene(self.game, pages,
                                        choices=[(t("tavern.accept"), accept), (t("tavern.leave"), None)]))
 
@@ -85,7 +96,7 @@ class TavernScene(Scene):
         bx, by, bw, bh = UI.BG
         if isinstance(self.game.stack[-1], DialogScene):
             # 会話中は酒場の風景、それ以外は依頼板
-            if not images.draw("tavern_bg", bx, by):
+            if not images.draw(bg_name(self.state, "tavern_bg"), bx, by):
                 UI.window(bx, by, bw, bh)
             return
         UI.window(bx, by, bw, bh)
@@ -107,7 +118,9 @@ class TavernScene(Scene):
         dx, dy, dw, dh = UI.DIALOG
         UI.window(dx, dy, dw, dh)
         tx = dx + 10
-        if images.draw("npc_master", dx + 3, dy + 1):
+        from data.story import SPEAKERS
+        pic = SPEAKERS.get(self.speaker(), {}).get("img") or "npc_master"
+        if images.draw(pic, dx + 3, dy + 1):
             tx = dx + 3 + 64 + 8
         if not self.quests:
             # この章は酒場の依頼がない (最終章など)
@@ -117,7 +130,7 @@ class TavernScene(Scene):
         qid = self.quests[self.cursor]
         q = QUESTS[qid]
         from scenes.dialog import wrap
-        override = DIALOGS.get(f"quest_{qid}")
+        override = DIALOGS.get(QUESTS[qid].get("text_key") or f"quest_{qid}")
         desc = tt(override[0][1]) if override else tt(q["text"])
         for i, line in enumerate(wrap(desc, dx + dw - tx - 8)[:4]):
             font.text(tx, dy + 6 + i * 12, line, UI.TEXT)

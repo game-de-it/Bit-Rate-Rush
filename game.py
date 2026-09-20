@@ -52,6 +52,10 @@ class Game:
         self.fade_cb = cb
 
     def push_fade(self, scene, length=None):
+        if self.fade_t:
+            # すでに暗転中 (前の場面転換のコールバックから呼ばれた等): そのまま積む。暗転明けでその場面が見える
+            self.push(scene)
+            return
         self.fade(lambda: self.push(scene), length)
 
     def pop_fade(self, length=None):

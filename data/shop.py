@@ -3,17 +3,17 @@
 # 入手順 (DESIGN_RPG §5.1): ナイフ (初期) → 槍 → 弓 → 手裏剣 → ハンマー → 鎖鎌 → ブーメラン → 斧
 # 1 章はナイフのみ (お金はランク強化・宿・アイテムに使う)
 WEAPON_STOCK = {
-    "spear":     dict(chapter=2, price=1000),
-    "bow":       dict(chapter=2, price=1200),
-    "shuriken":  dict(chapter=3, price=1600),
-    "hammer":    dict(chapter=3, price=3000),
-    "sickle":    dict(chapter=4, price=4000),
-    "boomerang": dict(chapter=4, price=5000),
-    "axe":       dict(chapter=4, price=6000),
-    # 後編 (章番号は後編の章構成が決まったら調整)
-    "whip":      dict(chapter=6, price=7000),
-    "crossbow":  dict(chapter=6, price=8000),
-    "grenade":   dict(chapter=7, price=9000),
+    # chapter = 前編で並ぶ章、chapter2 = 後編で並ぶ章 (アリアは新しい状態で始まるので前編の武器も買い直す)
+    "spear":     dict(chapter=2, chapter2=6, price=1000),
+    "bow":       dict(chapter=2, chapter2=6, price=1200),
+    "shuriken":  dict(chapter=3, chapter2=7, price=1600),
+    "whip":      dict(chapter=99, chapter2=7, price=2000),
+    "hammer":    dict(chapter=3, chapter2=8, price=3000),
+    "crossbow":  dict(chapter=99, chapter2=8, price=3500),
+    "sickle":    dict(chapter=4, chapter2=8, price=4000),
+    "boomerang": dict(chapter=4, chapter2=9, price=5000),
+    "grenade":   dict(chapter=99, chapter2=9, price=5500),
+    "axe":       dict(chapter=4, chapter2=9, price=6000),
 }
 
 RANK_COST = {2: 300, 3: 800, 4: 2000}
@@ -22,4 +22,6 @@ RANK_BONUS = 0.2       # ランクごとに基礎ダメージ +20%
 
 
 def stock(state):
+    if state.chapter >= 6:
+        return [k for k, v in WEAPON_STOCK.items() if v.get("chapter2", 99) <= state.chapter]
     return [k for k, v in WEAPON_STOCK.items() if v["chapter"] <= state.chapter]

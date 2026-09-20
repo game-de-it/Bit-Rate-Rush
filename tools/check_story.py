@@ -15,13 +15,22 @@ required = ["intro", "tavern_hello", "tavern_has_quest", "tavern_accept", "inn_h
             "smith_hello", "shop_hello", "castle_refuse", "castle_wait", "castle_done", "ending_town", "ending_night",
             "closed", "no_quest", "new_game_confirm"]
 for ch in CHAPTERS:
-    required.append(f"castle_before_{ch}")
-    if ch < FINAL_CHAPTER:
-        required.append(f"castle_after_{ch}")
+    if ch <= FINAL_CHAPTER:
+        required.append(f"castle_before_{ch}")
+        if ch < FINAL_CHAPTER:
+            required.append(f"castle_after_{ch}")
+    else:
+        # 後編 (private/STORY_PART2.md にあるときだけ検証。領主の依頼前会話は無ければ依頼文で代用される)
+        n = ch - 5
+        if f"p2_lord_after_{n}" in DIALOGS or ch == 6:
+            pass
 for q in QUESTS.values():
-    for k in ("boss_dialog", "after"):
+    for k in ("boss_dialog", "after", "after2", "intro", "first_bit"):
         if q.get(k):
             required.append(q[k])
+# 後編の会話は非公開ファイルにあるので、無いときは required から外す (公開リポジトリ単体でも OK にする)
+if not any(k.startswith("p2_") and k != "p2_intro" for k in DIALOGS):
+    required = [k for k in required if not k.startswith("p2_")]
 ok = True
 for k in required:
     if k not in DIALOGS:

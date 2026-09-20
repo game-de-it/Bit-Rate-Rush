@@ -5,7 +5,7 @@ from core import audio, save
 from core import palette as P
 from core.i18n import t, tt
 from data.quests import QUESTS
-from data.chapters import CHAPTERS, FINAL_CHAPTER
+from data.chapters import CHAPTERS, FINAL_CHAPTER, PART2_FINAL
 from game import Scene
 from ui import font
 from ui.menu import draw_overlay, draw_panel
@@ -46,7 +46,9 @@ class ResultScene(Scene):
                         st.magic.append(m)
                 ch = CHAPTERS.get(st.chapter)
                 if ch and ch["castle"] == play.quest_id:
-                    if st.chapter >= FINAL_CHAPTER:
+                    if st.chapter == PART2_FINAL:
+                        st.flags["pending_story"] = "ending2"
+                    elif st.chapter == FINAL_CHAPTER:
                         st.flags["pending_story"] = "ending"
                     else:
                         for m in ch["magic"]:

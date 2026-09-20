@@ -21,33 +21,35 @@ class InnScene(Scene):
         audio.bgm("inn")
         from scenes.dialog import DialogScene
         from data.story import DIALOGS
+        from data.story import resolve
         st = self.state
-        key = f"mira_{st.chapter}"
+        key = resolve(st, f"mira_{st.chapter}")
         if key in DIALOGS and not st.flags.get(key):
             st.flags[key] = True
             self.game.push(DialogScene(self.game, key, on_done=self.enter))
             return
         cost = rest_cost(st)
+        R = lambda k: resolve(st, k)
 
         pts = f" +{st.points}" if st.points else ""
         train_choice = (t("inn.train").format(st.hero_lv, pts), self.open_train)
         if st.hp >= st.maxhp:
-            self.game.push(DialogScene(self.game, "inn_full",
+            self.game.push(DialogScene(self.game, R("inn_full"),
                                        choices=[train_choice, (t("inn.leave"), self.game.pop_facility)]))
             return
 
         def rest():
             if st.gold < cost:
-                self.game.push(DialogScene(self.game, "inn_poor", on_done=self.game.pop_facility))
+                self.game.push(DialogScene(self.game, R("inn_poor"), on_done=self.game.pop_facility))
                 return
             st.gold -= cost
             st.hp = st.maxhp
             st.day += 1
             save.save(st)
             audio.se(audio.SE_LEVELUP)
-            self.game.push(DialogScene(self.game, "inn_rest", on_done=self.game.pop_facility))
+            self.game.push(DialogScene(self.game, R("inn_rest"), on_done=self.game.pop_facility))
 
-        self.game.push(DialogScene(self.game, "inn_hello",
+        self.game.push(DialogScene(self.game, R("inn_hello"),
                                    choices=[(t("inn.rest_cost").format(cost), rest), train_choice,
                                             (t("inn.leave"), self.game.pop_facility)]))
 
@@ -67,5 +69,6 @@ class InnScene(Scene):
         town = self.game.stack[0]
         town.draw_base(show_bg=False)
         bx, by, bw, bh = UI.BG
-        if not images.draw("inn_bg", bx, by):
+        from data.story import bg_name
+        if not images.draw(bg_name(self.state, "inn_bg"), bx, by):
             images.draw("town_bg", bx, by)

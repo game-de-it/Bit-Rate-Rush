@@ -5,6 +5,7 @@ from core import audio, images, save
 from core.i18n import t, tt
 from data.items import ITEMS, MAX_ITEMS, stock as item_stock
 from core import growth
+from data.story import bg_name
 from data.shop import WEAPON_STOCK, RANK_COST, MAX_RANK, stock as weapon_stock
 from data.weapons import WEAPONS
 from game import Scene
@@ -50,7 +51,8 @@ class ShopScene(Scene):
     def enter(self):
         audio.bgm(self.kind)
         from scenes.dialog import DialogScene
-        self.game.push(DialogScene(self.game, f"{self.kind}_hello"))
+        from data.story import resolve
+        self.game.push(DialogScene(self.game, resolve(self.state, f"{self.kind}_hello")))
 
     def say(self, key):
         self.msg = t(key)
@@ -112,7 +114,7 @@ class ShopScene(Scene):
         bx, by, bw, bh = UI.BG
         if isinstance(self.game.stack[-1], DialogScene):
             # 会話中は店の風景
-            if not images.draw(f"{self.kind}_bg", bx, by):
+            if not images.draw(bg_name(self.state, f"{self.kind}_bg"), bx, by):
                 UI.window(bx, by, bw, bh)
             return
         UI.window(bx, by, bw, bh)
@@ -153,7 +155,7 @@ class ShopScene(Scene):
         dx, dy, dw, dh = UI.DIALOG
         UI.window(dx, dy, dw, dh)
         tx = dx + 10
-        npc = "npc_smith" if self.kind == "smith" else "npc_shop"
+        npc = bg_name(self.state, "npc_smith" if self.kind == "smith" else "npc_shop")
         if images.draw(npc, dx + 3, dy + 1):
             tx = dx + 3 + 64 + 8
         if self.msg and self.msg_t > 0:
