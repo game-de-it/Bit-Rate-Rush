@@ -108,6 +108,7 @@ pyxel play Bit-Rate-Rush.pyxapp
 ## Status
 
 - **v1.0.0** — Part one (the Lumen arc): the core loop and the first half of the story
+- **v1.0.1** — Fixed a crash at startup on Pyxel Web (browser / PWF)
 - **v1.1.0 (planned)** — Part two (the Aria arc)
 
 Bugs and impressions are welcome in [Issues](../../issues). Balance will be tuned from feedback.
