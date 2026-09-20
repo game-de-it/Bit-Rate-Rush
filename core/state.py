@@ -31,6 +31,7 @@ class GameState:
         self.runs = 0                   # 出撃回数
         self.equip = "knife"            # 出発時の初期武器
         self.day = 1
+        self.stored = []                # 預けた装備 kind (戦闘中のレベルアップ候補に出ない)
 
     # --- 派生 ---
     @property
@@ -42,15 +43,32 @@ class GameState:
         return passive_slots(self.chapter)
 
     @property
-    def owned(self):
-        """ラン中のレベルアップ候補になる装備 (所持物理 + 所持魔法)。"""
+    def all_owned(self):
+        """所持している装備すべて (物理 + 魔法)。預けたものも含む"""
         return list(self.weapons.keys()) + list(self.magic)
+
+    @property
+    def owned(self):
+        """ラン中のレベルアップ候補になる装備 (所持物理 + 所持魔法、預けたものを除く)。"""
+        out = [k for k in self.all_owned if k not in self.stored]
+        return out or self.all_owned[:1]
+
+    def store(self, kind, on):
+        """預ける / 引き出す。初期武器は預けられない (預ける前に初期武器を変える)"""
+        if on:
+            if kind == self.equip or kind in self.stored:
+                return False
+            self.stored.append(kind)
+        else:
+            if kind in self.stored:
+                self.stored.remove(kind)
+        return True
 
     def to_dict(self):
         return dict(chapter=self.chapter, gold=self.gold, maxhp=self.maxhp, hp=self.hp,
                     weapons=self.weapons, magic=self.magic, items=self.items, materials=self.materials,
                     quest=self.quest, cleared=self.cleared, flags=self.flags, buff=self.buff,
-                    runs=self.runs, day=self.day, equip=self.equip)
+                    runs=self.runs, day=self.day, equip=self.equip, stored=self.stored)
 
     @classmethod
     def from_dict(cls, d):

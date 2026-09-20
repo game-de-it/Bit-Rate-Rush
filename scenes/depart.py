@@ -19,10 +19,17 @@ class DepartScene(Scene):
     def __init__(self, game, state):
         super().__init__(game)
         self.state = state
-        self.cursor = 0                       # 0: 初期武器, 1: 出発, 2: 戻る
-        self.owned = state.owned
-        if state.equip not in self.owned:
-            state.equip = self.owned[0]
+        self.cursor = 0                       # 0: 初期武器, 1: 装備の整理, 2: 出発, 3: 戻る
+        self.refresh()
+
+    def refresh(self):
+        st = self.state
+        self.owned = st.owned
+        if st.equip not in self.owned:
+            st.equip = self.owned[0]
+
+    def resume(self):
+        self.refresh()
 
     def update(self):
         inp = self.inp
@@ -31,21 +38,26 @@ class DepartScene(Scene):
             self.game.pop_facility()
             return
         if inp.up:
-            self.cursor = (self.cursor - 1) % 3
+            self.cursor = (self.cursor - 1) % 4
             audio.se(audio.SE_SELECT)
         if inp.down:
-            self.cursor = (self.cursor + 1) % 3
+            self.cursor = (self.cursor + 1) % 4
             audio.se(audio.SE_SELECT)
         if self.cursor == 0 and (inp.left or inp.right):
             i = self.owned.index(st.equip)
             st.equip = self.owned[(i + (1 if inp.right else -1)) % len(self.owned)]
             audio.se(audio.SE_SELECT)
         if inp.confirm:
-            if self.cursor == 2:
+            if self.cursor == 3:
                 self.game.pop_facility()
                 return
             if self.cursor == 0:
-                self.cursor = 1
+                self.cursor = 2
+                return
+            if self.cursor == 1:
+                from scenes.stash import StashScene
+                audio.se(audio.SE_SELECT)
+                self.game.push(StashScene(self.game, st))
                 return
             st.runs += 1
             save.save(st)
@@ -88,8 +100,8 @@ class DepartScene(Scene):
             x += 22 + font.width(tt(d["name"])) + 6
         if not st.items:
             font.text(x, y, "-", UI.SUB)
-        for i, key in enumerate(("depart.go", "depart.back")):
-            yy = by + bh - 28 + i * 13
+        for i, key in enumerate(("depart.stash", "depart.go", "depart.back")):
+            yy = by + bh - 41 + i * 13
             sel = self.cursor == i + 1
             if sel:
                 UI.sel_bar(bx + 4, yy - 2, bw - 8)
