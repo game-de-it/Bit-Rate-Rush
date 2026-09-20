@@ -12,6 +12,7 @@ STR = {
     "ending.tbc": ("後編へ続く", "To be continued"),
     "ending.tbc_sub": ("Bit-Rate-Rush アリア編", "Bit-Rate-Rush: Aria"),
     "title.chapter": ("章スタート (検証用)", "CHAPTER START (test)"),
+    "title.stage": ("検証ステージ", "TEST STAGE"),
     "title.start": ("はじめる", "START"),
     "title.overwrite": ("上書きして始める", "Overwrite and start"),
     "title.options": ("オプション", "OPTIONS"),

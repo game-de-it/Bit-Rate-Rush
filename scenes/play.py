@@ -19,12 +19,17 @@ from ui import hud
 class PlayScene(Scene):
     """メインループ。ワールドの状態 (敵・弾・ジェム) もここが持つ。"""
 
-    def __init__(self, game, start_weapons=("knife",), quest=None, state=None):
+    def __init__(self, game, start_weapons=("knife",), quest=None, state=None, debug=None):
+        """debug: 検証ステージの設定 dict (scenes.debug_stage)。waves / time_limit / hp_mult / hp_ramp / slots / passive_slots"""
         super().__init__(game)
         self.quest_id = quest
         self.quest = QUESTS[quest] if quest else None
         self.state = state
+        self.debug = debug
         self.player = Player(0.0, 0.0)
+        if debug:
+            self.player.max_weapon_slots = debug.get("slots", self.player.max_weapon_slots)
+            self.player.max_passive_slots = debug.get("passive_slots", self.player.max_passive_slots)
         if self.quest:
             self.player.max_weapon_slots = state.slots
             self.player.allowed = set(state.owned)
@@ -35,6 +40,8 @@ class PlayScene(Scene):
         for k in start_weapons:
             self.player.add_weapon(k)
         self.time_limit = self.quest["time_limit"] * 60 if self.quest else None
+        if debug and debug.get("time_limit"):
+            self.time_limit = debug["time_limit"] * 60
         self.kill_count = {}       # 敵種ごとの撃破数 (討伐依頼用)
         self.gold = 0              # このランで拾った金
         self.cleared = False       # 依頼達成
@@ -50,6 +57,8 @@ class PlayScene(Scene):
         self.grid = SpatialHash(32)
         if self.quest:
             self.spawner = Spawner(self, self.quest["waves"], self.quest["hp_mult"], self.quest["hp_ramp"])
+        elif debug:
+            self.spawner = Spawner(self, debug["waves"], debug.get("hp_mult", 1.0), debug.get("hp_ramp", 120.0))
         else:
             self.spawner = Spawner(self)
         self.frame = 0
@@ -154,6 +163,9 @@ class PlayScene(Scene):
             self.outcome = "dead"
         if self.quest and self.time_limit and self.frame >= self.time_limit and not self.result:
             self.result = "win" if self.cleared else "lose"
+            self.outcome = "timeup"
+        if self.debug and self.time_limit and self.frame >= self.time_limit and not self.result:
+            self.result = "win"                  # 検証ステージ: 時間まで生き延びたら終了
             self.outcome = "timeup"
         if self.result:
             from scenes.result import ResultScene

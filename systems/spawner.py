@@ -8,7 +8,8 @@ from entities.enemy import Enemy
 class Spawner:
     def __init__(self, world, waves="survival", base_mult=1.0, ramp=120.0):
         self.world = world
-        self.waves = WAVE_TABLES[waves]
+        # waves はウェーブ表のキー、またはウェーブ表そのもの (検証ステージ)
+        self.waves = WAVE_TABLES[waves] if isinstance(waves, str) else list(waves)
         self.acc = [0.0] * len(self.waves)
         self.done = [False] * len(self.waves)
         self.base_mult = base_mult    # 依頼ごとの基礎倍率

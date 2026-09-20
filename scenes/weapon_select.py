@@ -16,19 +16,26 @@ ROW = 14
 class WeaponSelectScene(Scene):
     overlay = True
 
-    def __init__(self, game):
+    def __init__(self, game, on_start=None, max_slots=MAX_WEAPON_SLOTS):
+        """on_start(keys): 選んだ武器で開始する処理。省略時はサバイバル (PlayScene) を開始"""
         super().__init__(game)
         self.keys = list(WEAPONS.keys())
         self.selected = {"knife"}
         self.cursor = 0
         self.n = len(self.keys) + 1     # 最後は「スタート」
+        self.on_start = on_start
+        self.max_slots = max_slots
 
     def start(self):
         if not self.selected:
             return
         audio.se(audio.SE_LEVELUP)
+        keys = [k for k in self.keys if k in self.selected]
+        if self.on_start:
+            self.on_start(keys)
+            return
         from scenes.play import PlayScene
-        self.game.replace_fade(PlayScene(self.game, start_weapons=[k for k in self.keys if k in self.selected]))
+        self.game.replace_fade(PlayScene(self.game, start_weapons=keys))
 
     def update(self):
         inp = self.inp
@@ -52,7 +59,7 @@ class WeaponSelectScene(Scene):
             if k in self.selected:
                 if len(self.selected) > 1:
                     self.selected.discard(k)
-            elif len(self.selected) < MAX_WEAPON_SLOTS:
+            elif len(self.selected) < self.max_slots:
                 self.selected.add(k)
             audio.se(audio.SE_SELECT)
 
@@ -61,7 +68,7 @@ class WeaponSelectScene(Scene):
         pw, ph = 220, 22 + ROW * self.n + 8
         px, py = (W - pw) // 2, (H - ph) // 2
         draw_panel(px, py, pw, ph)
-        font.center(py + 5, f"DEBUG: 初期武器 ({len(self.selected)}/{MAX_WEAPON_SLOTS})", P.GOLD)
+        font.center(py + 5, f"DEBUG: 初期武器 ({len(self.selected)}/{self.max_slots})", P.GOLD)
         for i in range(self.n):
             y = py + 20 + i * ROW
             sel = i == self.cursor

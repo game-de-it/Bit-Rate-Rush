@@ -34,7 +34,7 @@ def roll(player, n=3):
         if lv > 0:
             if lv < p["max"]:
                 pool.append((3, Option("passive", key, tt(p["name"]), tt(p["desc"]), p["col"], lv + 1)))
-        elif len(player.passives) < MAX_PASSIVE_SLOTS:
+        elif len(player.passives) < getattr(player, "max_passive_slots", MAX_PASSIVE_SLOTS):
             pool.append((2, Option("passive", key, tt(p["name"]), tt(p["desc"]), p["col"], 1)))
 
     out = []

@@ -27,6 +27,8 @@ class TitleScene(Scene):
             self.items.append("title.dialogs")
         if DEBUG_CHAPTER_START:
             self.items.append("title.chapter")
+        if DEBUG_WEAPON_SELECT:
+            self.items.append("title.stage")
         self.items.append("title.quit")
 
     def enter(self):
@@ -81,6 +83,9 @@ class TitleScene(Scene):
             elif key == "title.chapter":
                 from scenes.chapter_select import ChapterSelectScene
                 self.game.push(ChapterSelectScene(self.game))
+            elif key == "title.stage":
+                from scenes.debug_stage import DebugStageScene
+                self.game.push(DebugStageScene(self.game))
             else:
                 pyxel.quit()
 

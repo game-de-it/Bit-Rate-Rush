@@ -2,7 +2,7 @@ import pyxel
 
 from core import debug
 from core import sprites as S
-from data.weapons import weapon_stats
+from data.weapons import weapon_stats, MAX_PASSIVE_SLOTS
 
 
 class WeaponState:
@@ -46,6 +46,7 @@ class Player:
         self.kills = 0
         self.magnet_pending = False  # 磁石アイテム取得フラグ
         self.max_weapon_slots = 4    # ストーリーでは章で決まる
+        self.max_passive_slots = MAX_PASSIVE_SLOTS
         self.allowed = None          # レベルアップ候補にできる装備 (None = 全部)
         self.ranks = {}              # 物理武器のランク (ストーリー)
         self.items = []              # 持ち込んだ消耗品 (最大 3)
