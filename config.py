@@ -20,14 +20,18 @@ RUN_LENGTH = 600
 import os as _os
 
 
-def _debug_enabled():
+def _debug_enabled(after_init=False):
+    """after_init=False (import 時) は環境変数だけを見る。
+    pyxel.user_data_dir は pyxel.init 前に呼ぶと panic する環境がある (plumOS では例外、Web/Pyodide では即死で捕まえられない) ので、
+    セーブ先の "debug" ファイルの確認は init 後の refresh_debug() でだけ行う"""
     if _os.environ.get("BRR_DEBUG") == "1":
         return True
+    if not after_init:
+        return False
     try:
         import pyxel
         return _os.path.exists(_os.path.join(pyxel.user_data_dir("kroot", "Bit-Rate-Rush"), "debug"))
     except BaseException:
-        # pyxel.init 前の user_data_dir は環境によって panic する (実機で確認)。init 後に refresh_debug() で再評価する
         return False
 
 
@@ -44,7 +48,7 @@ def _apply_debug(on):
 
 def refresh_debug():
     """pyxel.init() の直後、他のモジュールを import する前に呼ぶ。"""
-    _apply_debug(_debug_enabled())
+    _apply_debug(_debug_enabled(after_init=True))
 
 
 _apply_debug(_debug_enabled())
