@@ -1,6 +1,17 @@
 """ストーリーモードの永続状態 (セーブ対象)。"""
 
-SLOTS_BY_CHAPTER = {1: 1, 2: 2, 3: 3}   # 章 → 武器スロット数 (4 章以降は 4)
+# 章 → 武器スロット数 / パッシブ枠。前編 (1〜5 章) は武器 1→4、パッシブ 4。後編 (6 章〜) で武器 5→6、パッシブ 5→6 に広げる
+# (後編の章番号と増えるタイミングは戦闘バランスを見て調整する)
+SLOTS_BY_CHAPTER = {1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6}
+PASSIVE_SLOTS_BY_CHAPTER = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6}
+
+
+def weapon_slots(chapter):
+    return SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 8 else 4)
+
+
+def passive_slots(chapter):
+    return PASSIVE_SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 8 else 4)
 
 
 class GameState:
@@ -24,7 +35,11 @@ class GameState:
     # --- 派生 ---
     @property
     def slots(self):
-        return SLOTS_BY_CHAPTER.get(self.chapter, 4)
+        return weapon_slots(self.chapter)
+
+    @property
+    def passive_slots(self):
+        return passive_slots(self.chapter)
 
     @property
     def owned(self):

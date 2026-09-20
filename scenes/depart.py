@@ -77,7 +77,7 @@ class DepartScene(Scene):
         icons.draw(st.equip, bx + 24, y - 2, w["col"])
         font.text(bx + 44, y, f"< {label} >" if sel0 else label, UI.ACCENT if sel0 else UI.TEXT)
         y += 14
-        font.text(bx + 10, y, f"{t('depart.slots')} {st.slots}   HP {int(st.hp)}/{st.maxhp}", UI.SUB); y += 13
+        font.text(bx + 10, y, f"{t('depart.slots')} {st.slots} / {t('depart.pslots')} {st.passive_slots}   HP {int(st.hp)}/{st.maxhp}", UI.SUB); y += 13
         # 持ち物
         font.text(bx + 10, y, f"{t('depart.items')}:", UI.SUB)
         x = bx + 60

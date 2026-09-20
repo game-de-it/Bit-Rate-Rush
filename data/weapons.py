@@ -107,8 +107,8 @@ PASSIVES = {
     "amount":   dict(name=("分身", "Duplicator"), col=14, desc=("攻撃回数 +1", "Projectiles +1"), max=2),
 }
 
-MAX_WEAPON_SLOTS = 4
-MAX_PASSIVE_SLOTS = 4
+MAX_WEAPON_SLOTS = 6     # 上限 (章ごとの実際の枠は core.state.weapon_slots)
+MAX_PASSIVE_SLOTS = 6    # 同上 (core.state.passive_slots)
 
 _STAT_KEY = dict(dmg="st.dmg", amount="st.amount", cd="st.cd", pierce="st.pierce", r="st.r",
                  dur="st.dur", rot="st.rot", speed="st.speed", reach="st.reach", length="st.length",

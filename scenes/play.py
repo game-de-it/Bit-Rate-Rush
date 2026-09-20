@@ -32,6 +32,7 @@ class PlayScene(Scene):
             self.player.max_passive_slots = debug.get("passive_slots", self.player.max_passive_slots)
         if self.quest:
             self.player.max_weapon_slots = state.slots
+            self.player.max_passive_slots = state.passive_slots
             self.player.allowed = set(state.owned)
             self.player.maxhp = state.maxhp
             self.player.hp = state.hp
