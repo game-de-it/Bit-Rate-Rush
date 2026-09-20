@@ -87,41 +87,42 @@ def bgm(name, battle=False, loop=True):
     if name is None:
         bgm_stop()
         return
-    slot = _bgm_slot.get(name)
+    # 先に今の曲を止めてからデコードする。デコード中 (実機で ~1 秒) は音声が更新されないので、
+    # 鳴らしたままだと Web 版で「ブブブ」というバッファ切れのノイズになる
+    bgm_stop()
+    slot = _load(name)
     if slot is None:
-        path = os.path.join(BGM_DIR, f"{name}.mp3")
-        if not os.path.exists(path):
-            bgm_stop()
-            return
-        slot = BGM_BASE + len(_bgm_slot)
-        try:
-            pyxel.sounds[slot].pcm(path)
-        except Exception:
-            bgm_stop()
-            return
-        _bgm_slot[name] = slot
-    pyxel.stop(0)
+        return
     _bgm_is_battle = battle
     _apply_bgm_gain()
     pyxel.play(0, slot, loop=loop)
     _bgm_now = name
 
 
+def _load(name):
+    """曲をデコードしてサウンド番号を返す (キャッシュ済みならそのまま)。無い / 失敗なら None。実機で 1 曲 ~1 秒かかる"""
+    slot = _bgm_slot.get(name)
+    if slot is not None:
+        return slot
+    path = os.path.join(BGM_DIR, f"{name}.mp3")
+    if not os.path.exists(path):
+        return None
+    slot = BGM_BASE + len(_bgm_slot)
+    try:
+        pyxel.sounds[slot].pcm(path)
+    except Exception:
+        return None
+    _bgm_slot[name] = slot
+    return slot
+
+
 def jingle(name):
     """ch0 で 1 回だけ再生 (ループなし)。BGM は止まる。"""
     global _bgm_now
-    slot = _bgm_slot.get(name)
+    bgm_stop()
+    slot = _load(name)
     if slot is None:
-        path = os.path.join(BGM_DIR, f"{name}.mp3")
-        if not os.path.exists(path):
-            return False
-        slot = BGM_BASE + len(_bgm_slot)
-        try:
-            pyxel.sounds[slot].pcm(path)
-        except Exception:
-            return False
-        _bgm_slot[name] = slot
-    pyxel.stop(0)
+        return False
     pyxel.channels[0].gain = _vol["bgm"] / 10.0
     pyxel.play(0, slot, loop=False)
     _bgm_now = None
