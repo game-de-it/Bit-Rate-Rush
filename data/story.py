@@ -7,7 +7,7 @@ import os
 
 PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "story.md")
 PATH_TEASER = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "story_teaser.md")      # 後編の導入 (p2_intro)
-PATH_PART2 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "private", "story_part2.md")     # 後編本体 (非公開。あれば teaser を上書き)
+PATH_PART2 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "private", "STORY_PART2.md")     # 後編本体 (非公開。あれば teaser を上書き)
 
 SPEAKERS = {"narr": dict(name=("", ""), img=None)}
 DIALOGS = {}
