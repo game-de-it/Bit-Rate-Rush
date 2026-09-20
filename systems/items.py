@@ -68,6 +68,15 @@ def _apply(world, kind):
         p.shield = 300
     elif kind == "tome":
         p.xp = p.xp_next
+    elif kind == "smoke":
+        if world.stun_t > 0:
+            return False
+        world.stun_t = 300
+        world.shake = max(world.shake, 2)
+    elif kind == "whetstone":
+        if p.sharpen > 0:
+            return False
+        p.sharpen = 1800
     return True
 
 

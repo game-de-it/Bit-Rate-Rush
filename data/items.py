@@ -8,6 +8,9 @@ ITEMS = {
     "tome":   dict(chapter=2, price=350, col=12, name=("経験の書", "Tome"), desc=("即レベルアップ", "Level up instantly")),
     "elixir": dict(chapter=3, price=400, col=14, name=("上薬草", "Elixir"), desc=("HP 全回復", "Full heal")),
     "arrow":  dict(chapter=3, price=500, col=7,  name=("聖なる矢", "Holy Arrow"), desc=("最も HP の高い敵に 500 ダメージ", "500 damage to the toughest foe")),
+    # ---- 後編 ----
+    "smoke":  dict(chapter=6, price=350, col=13, name=("煙玉", "Smoke Bomb"), desc=("5 秒間 敵が足を止める", "Enemies freeze for 5 s")),
+    "whetstone": dict(chapter=6, price=450, col=6, name=("砥石", "Whetstone"), desc=("30 秒間 攻撃力 +50%", "Damage +50% for 30 s")),
 }
 
 MAX_ITEMS = 3

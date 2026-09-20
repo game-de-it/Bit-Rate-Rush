@@ -42,6 +42,9 @@ def bullets_vs_enemies(world):
                     continue
                 b.hit.add(e)
             _damage(world, e, b.dmg, dx, dy, b.kb)
+            if b.kind == "frost":
+                e.slow = 40
+                e.slow_mult = b.dist
             if b.pierce > 0:
                 b.pierce -= 1
                 if b.pierce == 0:

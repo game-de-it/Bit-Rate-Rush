@@ -16,7 +16,8 @@ from entities.bullet import Bullet
 from core import audio
 
 VOLLEY = ("bow", "shuriken")       # 一斉発射する武器
-BURST_GAP = {"spear": 6, "boomerang": 8, "tower": 10, "sickle": 8, "axe": 5, "magic": 5, "holy": 5, "zap": 5}
+BURST_GAP = {"spear": 6, "boomerang": 8, "tower": 10, "sickle": 8, "axe": 5, "magic": 5, "holy": 5, "zap": 5,
+             "whip": 10, "grenade": 8, "crossbow": 6, "frost": 5, "meteor": 12}
 
 
 def update(world):
@@ -196,6 +197,58 @@ def _fire_one(world, ws):
         dist = random.uniform(20, 60)
         b = Bullet("holy", p.x + pyxel.cos(ang) * dist, p.y + pyxel.sin(ang) * dist, dmg, st["r"], col,
                    life=st["dur"], pierce=-1, tick=st["tick"])
+        world.bullets.append(b)
+    elif k == "whip":
+        # 前方 (連射の偶奇で前後交互) に一直線の打撃。円を並べて線にする
+        fx, fy = _facing(p)
+        if ws.burst % 2 == 1:
+            fx, fy = -fx, -fy
+        step = st["r"] * 1.6
+        n = max(2, int(st["reach"] / step))
+        for i in range(n):
+            d = 10 + i * step
+            world.bullets.append(Bullet("whip", p.x + fx * d, p.y + fy * d, dmg, st["r"], col,
+                                        life=st["dur"], pierce=-1, kb=st["kb"], tick=999, delay=i // 2))
+        world.bullets[-1].angle = pyxel.atan2(fy, fx)
+        audio.se(audio.SE_HIT)
+    elif k == "grenade":
+        # 向いた方向へ山なりに投げ、range 進んだら爆発 (着弾時に "blast" を生成)
+        fx, fy = _facing(p)
+        a = pyxel.atan2(fy, fx) + random.uniform(-8, 8)
+        life = max(6, int(st["range"] / st["speed"]))
+        b = Bullet("grenade", p.x, p.y, dmg, 3, col, life=life,
+                   vx=pyxel.cos(a) * st["speed"], vy=pyxel.sin(a) * st["speed"], pierce=0, kb=st["kb"])
+        b.dist = st["r"]                    # 爆発半径
+        world.bullets.append(b)
+    elif k == "crossbow":
+        tgt = world.nearest_enemy(p.x, p.y, st["range"])
+        if tgt is None:
+            ws.burst = 0
+            return
+        dx, dy = tgt.x - p.x, tgt.y - p.y
+        d = (dx * dx + dy * dy) ** 0.5 or 1.0
+        b = Bullet("crossbow", p.x, p.y, dmg, st["r"], col, life=120,
+                   vx=dx / d * st["speed"], vy=dy / d * st["speed"], pierce=st["pierce"], kb=st["kb"])
+        world.bullets.append(b)
+    elif k == "frost":
+        ang = random.uniform(0, 360)
+        dist = random.uniform(16, 50)
+        b = Bullet("frost", p.x + pyxel.cos(ang) * dist, p.y + pyxel.sin(ang) * dist, dmg, st["r"], col,
+                   life=st["dur"], pierce=-1, tick=st["tick"])
+        b.dist = st["slow"]                 # 鈍化率
+        world.bullets.append(b)
+    elif k == "meteor":
+        # 範囲内で敵が最も密集している敵の位置へ、1 秒後に落ちる
+        cands = world.enemies_within(p.x, p.y, st["range"])
+        if not cands:
+            ws.burst = 0
+            return
+        best, bn = None, -1
+        for e in random.sample(cands, min(8, len(cands))):
+            n_ = sum(1 for o in cands if (o.x - e.x) ** 2 + (o.y - e.y) ** 2 < 40 * 40)
+            if n_ > bn:
+                best, bn = e, n_
+        b = Bullet("meteor", best.x, best.y, dmg, st["r"], col, life=10, pierce=-1, kb=st["kb"], tick=999, delay=60)
         world.bullets.append(b)
     elif k == "zap":
         cands = world.enemies_within(p.x, p.y, st["range"])

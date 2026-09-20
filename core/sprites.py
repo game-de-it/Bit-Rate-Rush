@@ -40,6 +40,8 @@ SICKLE = (44, 48, 10, 10)
 HAMMER = (56, 48, 12, 12)
 BOOMERANG = (68, 48, 8, 8)
 SHURIKEN = (76, 48, 8, 8)
+BOMB = (84, 48, 8, 8)
+BOLT = (92, 48, 10, 6)
 
 COLKEY = 0
 O = P.OUTLINE
@@ -175,6 +177,27 @@ def build():
     img.rect(u + 18, v + 12, 5, 4, P.GOLD)
     img.rect(u + 10, v + 22, 12, 3, O)
     _outline(img, *BOSS)
+
+    # 火薬玉: 黒い球 + 導火線
+    _pixels(img, BOMB[0], BOMB[1], [
+        "......Y.",
+        ".....G..",
+        "..KKK...",
+        ".KKKKK..",
+        ".KWKKK..",
+        ".KKKKK..",
+        "..KKK...",
+        "........",
+    ], {"K": 1, "W": 7, "G": 13, "Y": 10})
+    # 弩の矢: 太い短矢 (右向き)
+    _pixels(img, BOLT[0], BOLT[1], [
+        "..........",
+        "GG........",
+        ".GGGGGGGW.",
+        "GGGGGGGGWW",
+        ".GGGGGGGW.",
+        "GG........",
+    ], {"G": 5, "W": 7})
 
     # --- 後編の敵 (仮グラフィック) ---
     # wisp: 揺れる炎 (黄→橙)、目は暗色

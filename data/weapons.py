@@ -56,6 +56,25 @@ WEAPONS = {
         base=dict(cd=45, dmg=5, amount=3, speed=2.5, pierce=1, r=3, kb=1.0, spread=22, range=70),
         levels=[dict(amount=1), dict(range=15), dict(dmg=2), dict(amount=1), dict(range=15), dict(amount=1), dict(range=20)],
     ),
+    # ---- 後編の物理 ----
+    "whip": dict(
+        cls="physical", col=4, dup=True,
+        name=("鞭", "Whip"), desc=("前方を横薙ぎに打つ。全て貫通", "Lashes ahead, pierces all"),
+        base=dict(cd=50, dmg=8, amount=1, reach=64, r=7, kb=2.0, dur=8),
+        levels=[dict(reach=12), dict(dmg=3), dict(amount=1), dict(reach=12), dict(dmg=4), dict(r=2), dict(amount=1)],
+    ),
+    "grenade": dict(
+        cls="physical", col=9, dup=True,
+        name=("火薬玉", "Grenade"), desc=("山なりに投げ、着弾で爆発する", "Lobbed, explodes on landing"),
+        base=dict(cd=100, dmg=22, amount=1, r=22, speed=1.6, range=90, kb=3.0),
+        levels=[dict(dmg=6), dict(r=4), dict(amount=1), dict(dmg=8), dict(r=4), dict(amount=1), dict(dmg=10)],
+    ),
+    "crossbow": dict(
+        cls="physical", col=5, dup=True,
+        name=("弩", "Crossbow"), desc=("最寄りの敵へ重い矢を射る。貫通", "Heavy bolt at the nearest foe"),
+        base=dict(cd=85, dmg=26, amount=1, speed=3.2, pierce=3, r=3, kb=2.5, range=200),
+        levels=[dict(dmg=8), dict(pierce=1), dict(amount=1), dict(dmg=10), dict(pierce=1), dict(cd=-10), dict(amount=1)],
+    ),
     # ---- 魔法 ----
     "magic": dict(
         cls="magic", col=12, dup=True,
@@ -87,6 +106,18 @@ WEAPONS = {
         base=dict(cd=24, dmg=2, amount=1, r=10, dur=90, tick=20),
         levels=[dict(r=2), dict(dur=30), dict(dmg=1), dict(r=2), dict(dur=30), dict(dmg=1), dict(r=3)],
     ),
+    "frost": dict(
+        cls="magic", col=12, dup=True,
+        name=("氷結", "Frost"), desc=("氷の床を作り、踏んだ敵を遅くする", "Icy ground that slows foes"),
+        base=dict(cd=140, dmg=2, amount=1, r=22, dur=150, tick=20, slow=0.5),
+        levels=[dict(r=4), dict(dur=30), dict(dmg=1), dict(amount=1), dict(r=4), dict(dur=30), dict(dmg=2)],
+    ),
+    "meteor": dict(
+        cls="magic", col=8, dup=True,
+        name=("流星", "Meteor"), desc=("敵の多い所へ星を落とし、大爆発", "Drops a star on the crowd"),
+        base=dict(cd=180, dmg=40, amount=1, r=30, range=160, kb=4.0),
+        levels=[dict(dmg=12), dict(r=5), dict(cd=-20), dict(amount=1), dict(dmg=15), dict(r=5), dict(amount=1)],
+    ),
     "tower": dict(
         cls="magic", col=10, dup=False,
         name=("ライトニングタワー", "Lightning Tower"), desc=("前方に避雷針を立て周囲を感電させる", "Rod that zaps all in range"),
@@ -112,7 +143,7 @@ MAX_PASSIVE_SLOTS = 6    # 同上 (core.state.passive_slots)
 
 _STAT_KEY = dict(dmg="st.dmg", amount="st.amount", cd="st.cd", pierce="st.pierce", r="st.r",
                  dur="st.dur", rot="st.rot", speed="st.speed", reach="st.reach", length="st.length",
-                 range="st.range", turn="st.turn", life="st.dur")
+                 range="st.range", turn="st.turn", life="st.dur", slow="st.slow")
 
 
 def weapon_stats(kind, level, rank=1):

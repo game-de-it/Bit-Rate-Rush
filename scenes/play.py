@@ -11,6 +11,7 @@ from game import Scene
 from entities.player import Player
 from entities.enemy_bullet import EnemyBullet
 from entities import bullet as bullet_mod
+from entities.bullet import Bullet
 from systems import weapons, collision, items
 from systems.spawner import Spawner
 from ui import hud
@@ -49,6 +50,7 @@ class PlayScene(Scene):
         self.clear_flash = 0
         self.outcome = None        # "return" | "dead" | "retreat" | "timeup"
         self.final_rush = False    # ラッシュ (出現 2 倍) 中か
+        self.stun_t = 0            # 煙玉: 敵が足を止める残りフレーム
         self.bonus_rush = 0        # 討伐依頼: 制限時間後のボーナスラッシュの長さ (分)。撃破数 ÷ 目標数
         self.enemies = []
         self.bullets = []
@@ -222,6 +224,9 @@ class PlayScene(Scene):
         px, py = p.x, p.y
         enemies = self.enemies
         frame = self.frame
+        stunned = self.stun_t > 0
+        if stunned:
+            self.stun_t -= 1
         # 追尾移動
         for e in enemies:
             dx = px - e.x
@@ -232,6 +237,11 @@ class PlayScene(Scene):
                 continue
             spd = e.spd
             e.t += 1
+            if e.slow > 0:
+                e.slow -= 1
+                spd *= e.slow_mult       # 氷結: 鈍化
+            if stunned:
+                spd = 0.0                # 煙玉: 足を止める (押し出しとノックバックは効く)
             data = e.data
             if e.boss:
                 spd = self.update_boss(e, spd)
@@ -374,12 +384,23 @@ class PlayScene(Scene):
     def update_bullets(self):
         p = self.player
         dead = False
+        blasts = []
         for b in self.bullets:
             b.update(p)
+            if b.explode:
+                # 火薬玉の着弾: その場に爆発 (単発の範囲ダメージ)
+                b.explode = False
+                b.alive = False
+                bl = Bullet("blast", b.x, b.y, b.dmg, b.dist, 9, life=8, pierce=-1, kb=b.kb, tick=999)
+                blasts.append(bl)
+                audio.se(audio.SE_HIT)
+                self.shake = max(self.shake, 3)
             if not b.alive:
                 dead = True
         if dead:
             self.bullets = [b for b in self.bullets if b.alive]
+        if blasts:
+            self.bullets.extend(blasts)
 
     def update_pickups(self):
         p = self.player

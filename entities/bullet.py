@@ -15,7 +15,7 @@ class Bullet:
     sweep: angle = 向き (度)、r = 半径。前方 180 度の半円が判定。
     """
     __slots__ = ("kind", "x", "y", "vx", "vy", "life", "maxlife", "dmg", "r", "pierce", "kb",
-                 "hit", "tick", "alive", "col", "angle", "dist", "rot", "owner", "delay", "spin")
+                 "hit", "tick", "alive", "col", "angle", "dist", "rot", "owner", "delay", "spin", "explode")
 
     def __init__(self, kind, x, y, dmg, r, col, life=60, vx=0.0, vy=0.0, pierce=1, kb=0.0, tick=0, delay=0):
         self.kind = kind
@@ -36,6 +36,7 @@ class Bullet:
         self.owner = None
         self.delay = delay
         self.spin = 0.0
+        self.explode = False
 
     def update(self, player):
         if self.delay > 0:
@@ -78,6 +79,13 @@ class Bullet:
                 return
         elif k == "shuriken":
             self.spin += 20
+        elif k == "grenade":
+            self.spin += 10
+            if self.life <= 1:
+                self.explode = True         # 着弾: systems.weapons.after_update が爆発を置く
+        elif k == "meteor":
+            # delay 明けの落下演出中は当たらない (life 10 のうち最初の 2 フレームで着弾)
+            pass
         self.x += self.vx
         self.y += self.vy
         self.life -= 1
@@ -86,10 +94,16 @@ class Bullet:
 
     # --- 描画 ---
     def draw(self):
-        if self.delay > 0:
-            return
         k = self.kind
         x, y = self.x, self.y
+        if self.delay > 0:
+            if k == "meteor":
+                # 落下予告: 点滅する印と、上から迫る星
+                if (self.delay // 4) % 2:
+                    pyxel.circb(x, y, self.r, 8)
+                pyxel.circ(x + self.delay * 0.6, y - self.delay * 2.5, 3, 9)
+                pyxel.line(x + self.delay * 0.6, y - self.delay * 2.5, x + self.delay * 0.6 + 6, y - self.delay * 2.5 - 12, 10)
+            return
         if k == "knife":
             # 残像 + 刃
             pyxel.line(x - self.vx * 4.5, y - self.vy * 4.5, x - self.vx * 1.2, y - self.vy * 1.2, 13)
@@ -202,6 +216,45 @@ class Bullet:
             pyxel.circ(x, y, self.r - 1, self.col)
             pyxel.circb(x, y, self.r - 1, 7)
             pyxel.pset(x - pyxel.cos(self.angle) * 3, y - pyxel.sin(self.angle) * 3, 7)
+        elif k == "whip":
+            # 鞭の軌跡: 短い斜線 + 先端の光
+            age = self.maxlife - self.life
+            c = 4 if age < 4 else 5
+            pyxel.line(x - 4, y + 2, x + 4, y - 2, c)
+            pyxel.line(x - 3, y - 2, x + 3, y + 2, c)
+            if age < 3:
+                pyxel.circb(x, y, self.r, 7)
+        elif k == "grenade":
+            _blt_rot(S.BOMB, x, y, self.spin)
+            if (self.life // 3) % 2:
+                pyxel.pset(x + 3, y - 4, 10)
+        elif k == "blast":
+            # 爆発: 広がる円 → 消える
+            age = self.maxlife - self.life
+            rr = self.r * min(1.0, (age + 1) / 4.0)
+            pyxel.circ(x, y, rr, 9 if age % 2 else 10)
+            pyxel.circ(x, y, rr * 0.55, 7 if age < 3 else 8)
+            pyxel.circb(x, y, rr, 8)
+        elif k == "crossbow":
+            pyxel.line(x - self.vx * 4, y - self.vy * 4, x - self.vx * 1.5, y - self.vy * 1.5, 13)
+            _blt_rot(S.BOLT, x, y, self.angle)
+        elif k == "frost":
+            # 氷の床: 薄い水色の円 + 結晶の線
+            if self.life > 20 or (self.life // 3) % 2 == 0:
+                pyxel.dither(0.5)
+                pyxel.circ(x, y, self.r, self.col)
+                pyxel.dither(1.0)
+                pyxel.circb(x, y, self.r, 7)
+                for i in range(3):
+                    a = i * 60 + (FRAME // 8) % 60
+                    pyxel.line(x - pyxel.cos(a) * self.r * 0.7, y - pyxel.sin(a) * self.r * 0.7,
+                               x + pyxel.cos(a) * self.r * 0.7, y + pyxel.sin(a) * self.r * 0.7, 7)
+        elif k == "meteor":
+            age = self.maxlife - self.life
+            rr = self.r * min(1.0, (age + 1) / 3.0)
+            pyxel.circ(x, y, rr, 8 if age % 2 else 9)
+            pyxel.circ(x, y, rr * 0.5, 10)
+            pyxel.circb(x, y, rr, 7)
         elif k == "zap":
             top = y - 120
             zx = x

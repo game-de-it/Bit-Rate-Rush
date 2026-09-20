@@ -52,6 +52,7 @@ class Player:
         self.items = []              # 持ち込んだ消耗品 (最大 3)
         self.item_cursor = 0
         self.shield = 0              # 無敵アイテムの残りフレーム
+        self.sharpen = 0             # 砥石: 攻撃力 +50% の残りフレーム
 
     @staticmethod
     def need_xp(level):
@@ -67,7 +68,7 @@ class Player:
 
     @property
     def might(self):
-        return 1 + 0.1 * self.passives.get("might", 0)
+        return (1 + 0.1 * self.passives.get("might", 0)) * (1.5 if self.sharpen > 0 else 1.0)
 
     @property
     def cooldown(self):
@@ -128,6 +129,8 @@ class Player:
             self.inv -= 1
         if self.shield > 0:
             self.shield -= 1
+        if self.sharpen > 0:
+            self.sharpen -= 1
 
     def draw(self):
         if self.shield > 0:

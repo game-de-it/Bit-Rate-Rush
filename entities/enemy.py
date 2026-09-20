@@ -7,7 +7,7 @@ from data.enemies import ENEMIES
 class Enemy:
     __slots__ = ("x", "y", "kind", "hp", "maxhp", "spd", "dmg", "xp", "r", "sprite",
                  "alive", "flash", "kx", "ky", "phase", "boss", "final", "summon",
-                 "dash", "dash_cd", "summon_cd", "shoot_cd", "dx", "dy", "data", "t", "midboss")
+                 "dash", "dash_cd", "summon_cd", "shoot_cd", "dx", "dy", "data", "t", "midboss", "slow", "slow_mult")
 
     def __init__(self, kind, x, y):
         d = ENEMIES[kind]
@@ -30,6 +30,8 @@ class Enemy:
         self.dash = 0
         self.dash_cd = d["dash"][0] if d.get("dash") else 180
         self.t = 0                  # 生存フレーム (蛇行の位相など)
+        self.slow = 0               # 鈍化の残りフレーム (氷結)
+        self.slow_mult = 1.0
         self.midboss = d.get("midboss", False)
         self.summon_cd = d.get("summon_cd", 300)
         self.shoot_cd = d.get("shoot_cd", 180)

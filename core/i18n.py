@@ -144,6 +144,7 @@ STR = {
     "st.reach": ("リーチ", "Reach"),
     "st.length": ("長さ", "Length"),
     "st.range": ("射程", "Range"),
+    "st.slow": ("鈍化", "Slow"),
     "st.turn": ("旋回", "Turn"),
 }
 

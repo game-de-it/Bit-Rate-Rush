@@ -10,6 +10,10 @@ WEAPON_STOCK = {
     "sickle":    dict(chapter=4, price=4000),
     "boomerang": dict(chapter=4, price=5000),
     "axe":       dict(chapter=4, price=6000),
+    # 後編 (章番号は後編の章構成が決まったら調整)
+    "whip":      dict(chapter=6, price=7000),
+    "crossbow":  dict(chapter=6, price=8000),
+    "grenade":   dict(chapter=7, price=9000),
 }
 
 RANK_COST = {2: 300, 3: 800, 4: 2000}
