@@ -42,7 +42,7 @@ class PlayScene(Scene):
             self.player.add_weapon(k)
         self.time_limit = self.quest["time_limit"] * 60 if self.quest else None
         if debug and debug.get("time_limit"):
-            self.time_limit = debug["time_limit"] * 60
+            self.time_limit = debug["time_limit"] * 60 * 60     # 分 → フレーム
         self.kill_count = {}       # 敵種ごとの撃破数 (討伐依頼用)
         self.gold = 0              # このランで拾った金
         self.cleared = False       # 依頼達成
@@ -231,12 +231,36 @@ class PlayScene(Scene):
                 e.alive = False          # 追いつけない敵は消す (ドロップなし)
                 continue
             spd = e.spd
+            e.t += 1
+            data = e.data
             if e.boss:
                 spd = self.update_boss(e, spd)
+            elif data.get("dash"):
+                spd = self.update_dash(e, spd)
             if d2 > 1.0:
                 inv = spd / (d2 ** 0.5)
                 e.dx = dx * inv
                 e.dy = dy * inv
+            keep = data.get("keep")
+            if keep:
+                # 射手: 一定距離まで近づいたら止まって撃つ。近すぎれば少し下がる
+                if d2 < keep * keep:
+                    if d2 < (keep * 0.6) ** 2:
+                        e.dx, e.dy = -e.dx * 0.5, -e.dy * 0.5
+                    else:
+                        e.dx = e.dy = 0.0
+                    e.shoot_cd -= 1
+                    if e.shoot_cd <= 0:
+                        e.shoot_cd = data.get("shoot_cd", 150)
+                        self.enemy_shoot_aimed(e)
+            zig = data.get("zigzag")
+            if zig and d2 > 1.0:
+                # 進行方向に直交する向きへ sin で揺らす
+                amp, period = zig
+                w = pyxel.sin(e.t * 360.0 / period) * amp
+                d = d2 ** 0.5
+                e.x += -dy / d * w
+                e.y += dx / d * w
             e.x += e.dx + e.kx
             e.y += e.dy + e.ky
             e.kx *= 0.8
@@ -270,35 +294,60 @@ class PlayScene(Scene):
                     e.x += dx * push
                     e.y += dy * push
 
-    def update_boss(self, e, spd):
-        """ボス: 周期的に突進 + 取り巻き召喚 + 放射弾。速度を返す。"""
-        d = e.data
+    def update_dash(self, e, spd):
+        """周期的な突進 (雑魚用)。data["dash"] = (休み frame, 突進 frame, 速度倍率)"""
+        rest, length, mult = e.data["dash"]
         e.dash_cd -= 1
         if e.dash > 0:
             e.dash -= 1
-            spd *= 3.5
+            spd *= mult
         elif e.dash_cd <= 0:
-            e.dash = 30
-            e.dash_cd = 180
-        e.summon_cd -= 1
-        if e.summon_cd <= 0:
-            e.summon_cd = d.get("summon_cd", 300)
-            for _ in range(d.get("summon_n", 6)):
-                ang = random.uniform(0, 360)
-                kind = random.choice(e.summon)
-                self.spawner.spawn(kind, e.x + pyxel.cos(ang) * 40, e.y + pyxel.sin(ang) * 40)
+            e.dash = length
+            e.dash_cd = rest
+        return spd
+
+    def update_boss(self, e, spd):
+        """ボス: 周期的に突進 + 取り巻き召喚 + 放射弾。速度を返す。中ボスは召喚しない。"""
+        d = e.data
+        if d.get("dash"):
+            spd = self.update_dash(e, spd)
+        else:
+            e.dash_cd -= 1
+            if e.dash > 0:
+                e.dash -= 1
+                spd *= 3.5
+            elif e.dash_cd <= 0:
+                e.dash = 30
+                e.dash_cd = 180
+        if e.summon:
+            e.summon_cd -= 1
+            if e.summon_cd <= 0:
+                e.summon_cd = d.get("summon_cd", 300)
+                for _ in range(d.get("summon_n", 6)):
+                    ang = random.uniform(0, 360)
+                    kind = random.choice(e.summon)
+                    self.spawner.spawn(kind, e.x + pyxel.cos(ang) * 40, e.y + pyxel.sin(ang) * 40)
         e.shoot_cd -= 1
         if e.shoot_cd <= 0:
             e.shoot_cd = d.get("shoot_cd", 180)
             self.boss_shoot(e)
         return spd
 
+    def enemy_shoot_aimed(self, e):
+        """雑魚の射撃: プレイヤー狙いの 1 発"""
+        p = self.player
+        dx, dy = p.x - e.x, p.y - e.y
+        ang = pyxel.atan2(dy, dx)
+        spd = e.data.get("shot_spd", 1.4)
+        self.enemy_bullets.append(EnemyBullet(e.x, e.y, pyxel.cos(ang) * spd, pyxel.sin(ang) * spd, e.dmg * 0.6))
+
     def boss_shoot(self, e):
         d = e.data
         n = d.get("shots", 8)
         spd = d.get("shot_spd", 1.2)
         dmg = e.dmg * 0.6
-        base = random.uniform(0, 360)
+        # spiral: 撃つたびに角度をずらして回転する弾幕 (中ボス)
+        base = (e.t * 7) % 360 if d.get("spiral") else random.uniform(0, 360)
         for i in range(n):
             ang = base + 360.0 * i / n
             self.enemy_bullets.append(EnemyBullet(e.x, e.y, pyxel.cos(ang) * spd, pyxel.sin(ang) * spd, dmg))

@@ -21,6 +21,10 @@ GHOST = (48, 0, 16, 16)
 SKULL = (64, 0, 16, 16)
 BRUTE = (80, 0, 16, 16)
 BOSS = (96, 0, 32, 32)
+WISP = (128, 0, 16, 16)
+ARCHER = (144, 0, 16, 16)
+BOAR = (160, 0, 16, 16)
+KNIGHT = (176, 0, 24, 24)
 GEM_S = (0, 32, 8, 8)
 GEM_M = (8, 32, 8, 8)
 GEM_L = (16, 32, 8, 8)
@@ -171,6 +175,96 @@ def build():
     img.rect(u + 18, v + 12, 5, 4, P.GOLD)
     img.rect(u + 10, v + 22, 12, 3, O)
     _outline(img, *BOSS)
+
+    # --- 後編の敵 (仮グラフィック) ---
+    # wisp: 揺れる炎 (黄→橙)、目は暗色
+    _pixels(img, WISP[0], WISP[1], [
+        "................",
+        ".......Y........",
+        "......YY........",
+        "......YYY.......",
+        ".....YYYY.Y.....",
+        ".....YYYYYYY....",
+        "....YYYOOYYY....",
+        "....YOOOOOOY....",
+        "....YOEOOEOY....",
+        "....YOOOOOOY....",
+        ".....OOOOOO.....",
+        ".....OOOOOO.....",
+        "......OOOO......",
+        ".......OO.......",
+        "................",
+        "................",
+    ], {"Y": 10, "O": 9, "E": 2})
+    _outline(img, *WISP)
+    # archer: 骸骨 + 弓 (茶)
+    _pixels(img, ARCHER[0], ARCHER[1], [
+        "................",
+        ".....BBBB.......",
+        "....BBBBBB......",
+        "....BEBBEB..R...",
+        "....BBBBBB.R....",
+        ".....BBBB.R.....",
+        "......BB.RR.....",
+        "....BBBBBR.R....",
+        "...B.BBBBR..R...",
+        "...B.BBBBR...R..",
+        ".....BBBB.R.....",
+        ".....BBBB..R....",
+        ".....B..B...R...",
+        ".....B..B.......",
+        "....BB..BB......",
+        "................",
+    ], {"B": 23, "E": 2, "R": 4})
+    _outline(img, *ARCHER)
+    # boar: 茶色の猪、牙は白
+    _pixels(img, BOAR[0], BOAR[1], [
+        "................",
+        "................",
+        "......DDDDDD....",
+        ".....DDDDDDDD...",
+        "...DDDDDDDDDDD..",
+        "..DDDDDDDDDDDDD.",
+        "..DEDDDDDDDDDDD.",
+        "..DDDDDDDDDDDD..",
+        ".WDDDDDDDDDDDD..",
+        "..DDDDDDDDDDD...",
+        "...DDDDDDDDDD...",
+        "...DD..DD..DD...",
+        "...DD..DD..DD...",
+        "...DD..DD..DD...",
+        "................",
+        "................",
+    ], {"D": 4, "E": 8, "W": 7})
+    _outline(img, *BOAR)
+    # knight: 灰色の鎧 + 赤い目、24x24
+    _pixels(img, KNIGHT[0], KNIGHT[1], [
+        "........................",
+        "..........GGGG..........",
+        ".........GGGGGG.........",
+        "........GGGGGGGG........",
+        "........GGRGGRGG........",
+        "........GGGGGGGG........",
+        ".........GGGGGG.........",
+        "......GGGGGGGGGGGG......",
+        ".....GGGGGGGGGGGGGG.....",
+        "....GGGGGGGGGGGGGGGG....",
+        "....GG.GGGGGGGGGG.GG....",
+        "....GG.GGGGGGGGGG.GG....",
+        "....GG.GGGGGGGGGG.GG....",
+        "....GG..GGGGGGGG..GG....",
+        "........GGGGGGGG........",
+        "........GGGGGGGG........",
+        "........GGGGGGGG........",
+        ".......GGGG..GGGG.......",
+        ".......GGGG..GGGG.......",
+        ".......GGGG..GGGG.......",
+        ".......GGGG..GGGG.......",
+        "......GGGGG..GGGGG......",
+        "........................",
+        "........................",
+    ], {"G": 13, "R": 8})
+    _outline(img, *KNIGHT)
 
     # gems
     _gem(img, 0, 32, P.ACCENT, 7)
