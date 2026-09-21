@@ -31,8 +31,9 @@ def make_state(chapter):
             if q["chapter"] == ch and q["client"] == "tavern" and not q.get("flag"):
                 st.cleared.append(qid)
         if ch >= 2:
-            st.flags["rumor_seer"] = True
-            st.flags["p2_rumor_seer"] = True
+            for qid, q in QUESTS.items():
+                if q["chapter"] == ch and q.get("flag"):
+                    st.flags[q["flag"]] = True
             st.flags[f"mira_{ch}"] = True
             # 2 章の隠し依頼 (占い師) もクリア済み → 衛星を所持
             for qid, q in QUESTS.items():

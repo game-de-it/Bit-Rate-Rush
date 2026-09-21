@@ -31,11 +31,15 @@ class InnScene(Scene):
         cost = rest_cost(st)
         R = lambda k: resolve(st, k)
 
+        from core import growth
         pts = f" +{st.points}" if st.points else ""
-        train_choice = (t("inn.train").format(st.hero_lv, pts), self.open_train)
+        extra = [(t("inn.train").format(st.hero_lv, pts), self.open_train)] if growth.enabled(st) else []
         if st.hp >= st.maxhp:
+            if not extra:
+                self.game.push(DialogScene(self.game, R("inn_full"), on_done=self.game.pop_facility))
+                return
             self.game.push(DialogScene(self.game, R("inn_full"),
-                                       choices=[train_choice, (t("inn.leave"), self.game.pop_facility)]))
+                                       choices=extra + [(t("inn.leave"), self.game.pop_facility)]))
             return
 
         def rest():
@@ -50,8 +54,8 @@ class InnScene(Scene):
             self.game.push(DialogScene(self.game, R("inn_rest"), on_done=self.game.pop_facility))
 
         self.game.push(DialogScene(self.game, R("inn_hello"),
-                                   choices=[(t("inn.rest_cost").format(cost), rest), train_choice,
-                                            (t("inn.leave"), self.game.pop_facility)]))
+                                   choices=[(t("inn.rest_cost").format(cost), rest)] + extra +
+                                           [(t("inn.leave"), self.game.pop_facility)]))
 
     def open_train(self):
         from scenes.train import TrainScene

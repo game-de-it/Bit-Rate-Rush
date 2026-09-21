@@ -55,6 +55,7 @@ class PlayScene(Scene):
         self.final_rush = False    # ラッシュ (出現 2 倍) 中か
         self.stun_t = 0            # 煙玉: 敵が足を止める残りフレーム
         self.intro_done = False    # 依頼の intro 会話を出したか
+        self.event_done = False    # 依頼の途中イベント (event) を出したか
         self.first_bit_done = False  # no_bits 依頼: 最初のビットが消えたときの会話を出したか
         self.bonus_rush = 0        # 討伐依頼: 制限時間後のボーナスラッシュの長さ (分)。撃破数 ÷ 目標数
         self.enemies = []
@@ -86,9 +87,10 @@ class PlayScene(Scene):
             # 戦闘開始直後の会話 (現地に着いたとき)。暗転中に積むので直接 push する
             self.intro_done = True
             from scenes.dialog import DialogScene
-            from data.story import OPTIONS
+            from data.story import OPTIONS, DIALOGS
             key = self.quest["intro"]
-            self.game.push(DialogScene(self.game, key, fade_out=bool(OPTIONS.get(key, {}).get("vn"))))
+            if key in DIALOGS:
+                self.game.push(DialogScene(self.game, key, fade_out=bool(OPTIONS.get(key, {}).get("vn"))))
 
     def exit(self):
         audio.bgm_stop()
@@ -157,6 +159,16 @@ class PlayScene(Scene):
                     self.spawner.wave_time_cap = q["time_limit"] - 0.5   # 制限時間直前のウェーブを続ける
                     self.start_rush()
                     self.spawner.rate_mult = 2.0
+        ev = self.quest.get("event") if self.quest else None
+        if ev and not self.event_done and self.frame >= ev["at"] * 60:
+            # 途中イベント: 会話を挟み、必要ならラッシュを始める (4 章: コーダとの遭遇)
+            self.event_done = True
+            def after():
+                if ev.get("rush"):
+                    self.start_rush()
+                    self.spawner.rate_mult = 2.0
+            self.push_story(ev["dialog"], on_done=after)
+            return
         self.spawner.update(t_sec)
         p.update(inp)
         items.update(self)
@@ -219,9 +231,13 @@ class PlayScene(Scene):
                 self.push_story(q["after"], on_done=nxt)
 
     def push_story(self, key, on_done=None):
-        """戦闘中の物語会話。VN 会話なら暗転で出入りする (街用の窓なら暗転なし)。"""
+        """戦闘中の物語会話。VN 会話なら暗転で出入りする (街用の窓なら暗転なし)。会話が未作成なら飛ばす。"""
         from scenes.dialog import DialogScene
-        from data.story import OPTIONS
+        from data.story import OPTIONS, DIALOGS
+        if key not in DIALOGS:
+            if on_done:
+                on_done()
+            return
         if OPTIONS.get(key, {}).get("vn"):
             self.game.push_fade(DialogScene(self.game, key, fade_out=True, on_done=on_done))
         else:

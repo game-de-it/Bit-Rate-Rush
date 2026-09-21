@@ -42,7 +42,8 @@ def context(key):
 class DialogViewerScene(Scene):
     def __init__(self, game):
         super().__init__(game)
-        self.keys = list(DIALOGS.keys()) + [f"@chapter{n}" for n in range(1, 6)] + ["@credits", "@still:p2_op09"]
+        from data.chapters import CHAPTERS
+        self.keys = list(DIALOGS.keys()) + [f"@chapter{n}" for n in CHAPTERS] + ["@credits", "@still:p2_op09"]
         self.cursor = 0
         self.top = 0
         self.state = GameState()
@@ -79,7 +80,7 @@ class DialogViewerScene(Scene):
             audio.se(audio.SE_SELECT)
             if key.startswith("@chapter"):
                 from scenes.chapter_title import ChapterTitleScene
-                self.game.push_fade(ChapterTitleScene(self.game, int(key[-1])))
+                self.game.push_fade(ChapterTitleScene(self.game, int(key[len("@chapter"):])))
                 return
             if key == "@credits":
                 from scenes.credits import CreditsScene

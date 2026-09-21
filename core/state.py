@@ -3,16 +3,18 @@
 # 章 → 武器スロット数 / パッシブ枠。前編 (1〜5 章) は武器 1→4、パッシブ 4。後編 (6 章〜) で武器 5→6、パッシブ 5→6 に広げる
 # (後編の章番号と増えるタイミングは戦闘バランスを見て調整する)
 # 後編はアリアが新しい状態で始まるので、武器枠は 2 から (前編より 1 つ多い状態で始まり、最終章で 6)
-SLOTS_BY_CHAPTER = {1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6}
-PASSIVE_SLOTS_BY_CHAPTER = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4, 6: 4, 7: 4, 8: 5, 9: 5, 10: 6}
+SLOTS_BY_CHAPTER = {1: 1, 2: 2, 3: 3, 4: 4, 5: 4,
+                    6: 2, 7: 2, 8: 3, 9: 3, 10: 4, 11: 4, 12: 5, 13: 5, 14: 5, 15: 6, 16: 6, 17: 6}
+PASSIVE_SLOTS_BY_CHAPTER = {1: 4, 2: 4, 3: 4, 4: 4, 5: 4,
+                            6: 4, 7: 4, 8: 4, 9: 5, 10: 5, 11: 5, 12: 5, 13: 6, 14: 6, 15: 6, 16: 6, 17: 6}
 
 
 def weapon_slots(chapter):
-    return SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 10 else 4)
+    return SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 17 else 4)
 
 
 def passive_slots(chapter):
-    return PASSIVE_SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 10 else 4)
+    return PASSIVE_SLOTS_BY_CHAPTER.get(chapter, 6 if chapter > 17 else 4)
 
 
 def new_part2_state():

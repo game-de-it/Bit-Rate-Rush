@@ -42,12 +42,11 @@ class TavernScene(Scene):
             key = resolve(st, f"tavern_hello_{st.chapter}")
             if key not in DIALOGS:
                 key = resolve(st, "tavern_hello")
-        if st.chapter == 2 and not st.flags.get("rumor_seer"):
-            st.flags["rumor_seer"] = True          # 噂を聞くと占い師の依頼が並ぶ
-            self.quests = offered(st)
-        if st.chapter == 7 and not st.flags.get("p2_rumor_seer"):
-            st.flags["p2_rumor_seer"] = True       # 後編: 港の外れの占い師
-            self.quests = offered(st)
+        # 噂を聞くと隠し依頼 (flag 付き) が並ぶ: その章の flag 付き依頼のフラグを立てる
+        for qid, q in QUESTS.items():
+            if q["chapter"] == st.chapter and q.get("flag") and not st.flags.get(q["flag"]):
+                st.flags[q["flag"]] = True
+                self.quests = offered(st)
         first = resolve(st, "tavern_first")
         if first in DIALOGS and not st.flags.get(first):
             # 初回だけ: 用語の説明 → 通常の挨拶

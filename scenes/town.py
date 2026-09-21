@@ -62,20 +62,27 @@ class TownScene(Scene):
                 ch = st.chapter
                 key = resolve(st, pending)
 
+                from data.chapters import CHAPTERS
+
+                def chain(keys, then):
+                    """keys の会話 (VN) を順に挟んでから then。無いキーは飛ばす"""
+                    keys = [k for k in keys if k in DIALOGS]
+                    if not keys:
+                        then()
+                        return
+                    self.game.push_fade(DialogScene(self.game, keys[0], fade_out=True,
+                                                    on_done=lambda: chain(keys[1:], then)))
+
                 def after_title():
-                    # 後編最終章: 章タイトルのあと、決戦の前に占い師 (1 回だけ)
-                    if ch == 10 and not st.flags.get("p2_seer_5") and "p2_seer_5" in DIALOGS:
-                        st.flags["p2_seer_5"] = True
-                        self.game.push_fade(DialogScene(self.game, "p2_seer_5", fade_out=True))
-                    audio.bgm("town")
+                    # 新しい章に入ったとき一度だけ挟む会話 (CHAPTERS[ch]["on_enter"])
+                    flag = f"on_enter_{ch}"
+                    keys = [] if st.flags.get(flag) else CHAPTERS.get(ch, {}).get("on_enter", [])
+                    st.flags[flag] = True
+                    chain(keys, lambda: audio.bgm("town"))
                 title = lambda: self.game.push(ChapterTitleScene(self.game, ch, on_done=after_title))
-                # 後編: 領主の会話のあと、占い師の小屋へ (7〜9 章クリア後 = p2_seer_2〜4)
+                # 領主 (王) の会話のあとに挟む会話 (CHAPTERS[前の章]["after_lord"]: 占い師の小屋など)
                 old_ch = int(pending.rsplit("_", 1)[1])
-                seer = f"p2_seer_{old_ch - 5}" if 7 <= old_ch <= 9 else None
-                if seer in DIALOGS:
-                    nxt = lambda: self.game.push_fade(DialogScene(self.game, seer, fade_out=True, on_done=title))
-                else:
-                    nxt = title
+                nxt = lambda: chain(CHAPTERS.get(old_ch, {}).get("after_lord", []), title)
                 if key in DIALOGS:
                     self.game.push(DialogScene(self.game, key, fade_out=True, on_done=nxt))
                 else:

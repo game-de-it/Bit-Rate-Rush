@@ -114,8 +114,11 @@ class ResultScene(Scene):
         font.right(y, f"{self.reward} G", P.GOLD, px + pw - 12); y += 14
         font.text(px + 12, y, t("res.hp"), 7)
         font.right(y, f"{int(self.hp_after)}/{self.play.state.maxhp}", 7, px + pw - 12); y += 14
-        font.text(px + 12, y, t("res.exp"), 7)
-        ups = f"  {t('res.hero_up')} Lv{self.play.state.hero_lv}" if self.hero_ups else ""
-        font.right(y, f"+{self.exp_gain}{ups}", P.ACCENT if self.hero_ups else 7, px + pw - 12); y += 18
+        from core import growth
+        if growth.enabled(self.play.state):
+            font.text(px + 12, y, t("res.exp"), 7)
+            ups = f"  {t('res.hero_up')} Lv{self.play.state.hero_lv}" if self.hero_ups else ""
+            font.right(y, f"+{self.exp_gain}{ups}", P.ACCENT if self.hero_ups else 7, px + pw - 12); y += 14
+        y += 4
         if self.t > 60 and (self.t // 30) % 2 == 0:
             font.center(y + 6, t("res.to_town"), 6)

@@ -1,4 +1,4 @@
-"""鍛錬 (宿屋): 熟練ポイントを基礎能力・スキルに振る。"""
+"""加護を受ける (宿屋、後編のみ): 加護の力を身体への加護 (基礎能力)・特別な加護 (スキル) に振る。"""
 import pyxel
 
 from config import W, H
@@ -47,7 +47,7 @@ class TrainScene(Scene):
         pw, ph = 300, 40 + ROW * (len(self.keys) + 2) + 26
         px, py = (W - pw) // 2, (H - ph) // 2
         draw_panel(px, py, pw, ph)
-        font.center(py + 6, f"{t('train.title')}   {t('res.exp').split(' ')[0]} Lv{st.hero_lv}", P.GOLD)
+        font.center(py + 6, f"{t('train.title')}   Lv{st.hero_lv}", P.GOLD)
         need = growth.need_exp(st.hero_lv)
         font.text(px + 10, py + 20, f"{t('train.points')}: {st.points}", P.ACCENT if st.points else 7)
         font.right(py + 20, f"{t('train.next')} {st.exp}/{need}", 13, px + pw - 10)

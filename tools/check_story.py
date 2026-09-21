@@ -34,7 +34,10 @@ if not any(k.startswith("p2_") and k != "p2_intro" for k in DIALOGS):
 ok = True
 for k in required:
     if k not in DIALOGS:
-        print("MISSING dialog:", k); ok = False
+        if k.startswith("p2_"):
+            print("(note) part-2 dialog not written yet:", k)      # 後編は執筆中: 無ければゲームは飛ばす
+        else:
+            print("MISSING dialog:", k); ok = False
     elif not DIALOGS[k]:
         print("EMPTY dialog:", k); ok = False
 for k, pages in DIALOGS.items():

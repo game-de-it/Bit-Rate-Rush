@@ -1,5 +1,7 @@
-"""主人公の成長 (熟練度)。戦闘中のレベルとは別に、戦闘の成果で熟練 EXP が貯まり、熟練 Lv が上がるとポイントを得る。
-ポイントは宿屋の「鍛錬」で基礎能力とスキルに振る。セーブ対象 (GameState.exp / hero_lv / points / growth / skills)。
+"""主人公の成長 = 大精霊の「加護」(後編のみ)。戦闘中のレベルとは別に、戦闘で集めた光 (加護 EXP) が貯まり、
+加護 Lv が上がると「加護の力」(ポイント) を 1 つ得る。宿屋の「加護を受ける」で身体への加護 (基礎能力) と特別な加護 (スキル) に振る。
+前編の主人公 (ビットを喰う者) には加護は無い: 前編では EXP が貯まらず、宿屋の項目も出ない。
+セーブ対象 (GameState.exp / hero_lv / points / growth / skills)。
 
 基礎能力 (1 ポイントごと):
   hp   最大 HP +10        atk  攻撃力 +5%      spd  移動速度 +4%
@@ -25,13 +27,20 @@ SKILLS = {
 }
 
 
+def enabled(state):
+    """加護があるか (後編の主人公だけ)"""
+    return state is not None and state.chapter >= 6
+
+
 def need_exp(lv):
-    """熟練 Lv lv → lv+1 に必要な EXP。序盤は 2〜3 戦で 1 つ上がり、後半は緩やかに伸びる"""
+    """加護 Lv lv → lv+1 に必要な光。序盤は 2〜3 戦で 1 つ上がり、後半は緩やかに伸びる"""
     return 150 + 80 * (lv - 1) + 10 * (lv - 1) ** 2
 
 
 def run_exp(play, quest_ok, first_clear, boss_killed):
-    """1 回の戦闘で得る熟練 EXP。撃破数 + 生存時間 + 依頼達成 + ボス撃破"""
+    """1 回の戦闘で得る加護 EXP (光)。撃破数 + 生存時間 + 依頼達成 + ボス撃破。前編は 0"""
+    if not enabled(play.state):
+        return 0
     kills = play.player.kills
     sec = play.frame // 60
     exp = kills + sec // 3
@@ -45,7 +54,7 @@ def run_exp(play, quest_ok, first_clear, boss_killed):
 
 
 def add_exp(state, exp):
-    """EXP を加算し、上がった熟練 Lv の数を返す (1 Lv につき 1 ポイント)"""
+    """光を加算し、上がった加護 Lv の数を返す (1 Lv につき加護の力 1 つ)"""
     state.exp += exp
     ups = 0
     while state.exp >= need_exp(state.hero_lv):
